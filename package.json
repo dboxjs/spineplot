@@ -1,0 +1,32 @@
+{
+  "name": "@dboxjs/bars",
+  "version": "0.0.1",
+  "description": "A bar-chart layer for dbox",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dboxjs/bars.git"
+  },
+  "keywords": [
+    "d3",
+    "charts",
+    "dbox",
+    "radar"
+  ],
+  "author": "Alecs Garza",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dboxjs/bars/issues"
+  },
+  "homepage": "https://github.com/dboxjs/bars#readme",
+  "devDependencies": {
+    "eslint": "^4.3.0",
+    "mocha": "^3.4.2"
+  },
+  "directories": {
+    "test": "test"
+  }
+}
