@@ -141,7 +141,7 @@ export default function(config) {
     var vm = this;
     vm._chart._svg.call(vm._tip);
 
-    if(vm._config.xAxis.enabled) {
+    /* if(vm._config.xAxis.enabled) {
        vm._chart._svg.append("g")
           .attr("class", "xAxis axis")
           .attr("transform", "translate(0," + vm._chart._height + ")")
@@ -150,9 +150,9 @@ export default function(config) {
             .tickFormat(vm._config.xAxis.tickFormat)
           );
         //vm._chart._svg.selectAll(".xAxis.axis text").attr("transform", "translate(0,10)rotate(-20)");
-    }
+    } */
 
-    if(vm._config.yAxis.enabled) {
+    /*if(vm._config.yAxis.enabled) {
       if(vm._config.yAxis.position == 'right') {
         var yAxis = d3.axisRight(vm._scales.y)
               .ticks(vm._config.yAxis.ticks)
@@ -177,8 +177,8 @@ export default function(config) {
           .attr("dy", "0.71em")
           .attr("text-anchor", "end")
           .text("Frequency");
-        */
-    }
+        
+  }*/
 
     vm._chart._svg.selectAll(".bar")
         .data(vm._data)
