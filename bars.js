@@ -137,7 +137,7 @@ export default function(config) {
       vm._scales.color = d3.scaleOrdinal(vm._config.colorScale);
 
     if(vm._config.bars.quantiles)
-      vm._scales.color = vm._getQuantileColor;
+      vm._scales.color = false;
     return vm;
   }
 
@@ -203,17 +203,39 @@ export default function(config) {
           .attr("y", function(d) { return vm._scales.y(d[vm._config.y]);})
           .attr("width", function(d){ return vm._scales.x.bandwidth ? vm._scales.x.bandwidth() : vm._scales.x(d[vm._config.x]) })
           .attr("height", function(d) { return vm._chart._height - vm._scales.y(d[vm._config.y]); })
-          .attr("fill", function(d){ 
-            return vm._scales.color(d[vm._config.color])})
+          .attr("fill", function(d){             
+            return vm._scales.color !== false ? vm._scales.color(d[vm._config.color]): vm._getQuantileColor(d[vm._config.color],'default');
+          })
           .style("opacity", 0.9)
-          .on('mouseover', function(d) {
+          .on('mouseover', function(d,i) {
+            if (vm._config.data.onmouseover) { //External function call
+              vm._config.data.onmouseover.call(this, d, i);
+            }
+
+            if(vm._config.bars.quantiles.colorsOnHover){ //OnHover colors
+              d3.select(this).attr('fill', function(d) {
+                  return vm._getQuantileColor(d[vm._config.color],'onHover');
+              })
+            }
+
             vm._tip.show(d, d3.select(this).node());
           })
-          .on('mouseout', function() {
+          .on('mouseout', function(d,i) {
+            if (vm._config.data.onmouseout) { //External function call
+              vm._config.data.onmouseout.call(this, d, i)
+            }
+            
+            if(vm._config.bars.quantiles.colorsOnHover){ //OnHover reset default color
+              d3.select(this).attr('fill', function(d) {
+                return vm._getQuantileColor(d[vm._config.color],'default');
+              })
+            }
             vm._tip.hide();
           })
-          .on('click', function() {
-
+          .on('click', function(d,i) {
+            if (vm._config.data.onclick) {
+              vm._config.data.onclick.call(this, d, i)
+            }
           });
     return vm;
   }
@@ -229,7 +251,7 @@ export default function(config) {
     }
 
     data.forEach(function(d){      
-      values.push(+d[vm._config.z]);
+      values.push(+d[vm._config.color]);
     });
 
     values.sort(d3.ascending);
@@ -239,6 +261,8 @@ export default function(config) {
 
       if(vm._config.bars.quantiles.ignoreZeros === true){
         var aux = _.dropWhile(values, function(o) { return o <= 0 });
+        //aux.unshift(values[0]);  
+
         quantile.push(values[0]);
         quantile.push(0);
         
@@ -269,7 +293,7 @@ export default function(config) {
     return quantile;
   }
 
-  Bars.prototype._getQuantileColor = function(d){
+  Bars.prototype._getQuantileColor = function(d,type){
     var vm = this; 
     var total = parseFloat(d);
 
@@ -283,22 +307,38 @@ export default function(config) {
             return vm._config.bars.quantiles.outOfRangeColor; 
           }
         }else{
-          if(total < vm.minMax[0] || total > vm.minMax[1]){
+          if(total < vm._minMax[0] || total > vm._minMax[1]){
             console.log('outOfRangeColor', total, vm._config.bars.min ,vm._config.bars.max)
             return vm._config.bars.quantiles.outOfRangeColor; 
           }
         }
 
-        if(total <= vm._quantiles[1]){
-          return vm._config.bars.quantiles.colors[0];//"#f7c7c5";
-        }else if(total <= vm._quantiles[2]){
-          return vm._config.bars.quantiles.colors[1];//"#e65158";
-        }else if(total <= vm._quantiles[3]){
-          return vm._config.bars.quantiles.colors[2];//"#c20216";
-        }else if(total <= vm._quantiles[4]){
-          return vm._config.bars.quantiles.colors[3];//"#750000";
-        }else if(total <= vm._quantiles[5]){
-          return vm._config.bars.quantiles.colors[4];//"#480000";
+        if(type == 'default'){
+          if(total <= vm._quantiles[1]){
+            return vm._config.bars.quantiles.colors[0];//"#f7c7c5";
+          }else if(total <= vm._quantiles[2]){
+            return vm._config.bars.quantiles.colors[1];//"#e65158";
+          }else if(total <= vm._quantiles[3]){
+            return vm._config.bars.quantiles.colors[2];//"#c20216";
+          }else if(total <= vm._quantiles[4]){
+            return vm._config.bars.quantiles.colors[3];//"#750000";
+          }else if(total <= vm._quantiles[5]){
+            return vm._config.bars.quantiles.colors[4];//"#480000";
+          }
+        }
+
+        if(type == 'onHover' && vm._config.bars.quantiles.colorsOnHover){
+          if(total <= vm._quantiles[1]){
+            return vm._config.bars.quantiles.colorsOnHover[0];//"#f7c7c5";
+          }else if(total <= vm._quantiles[2]){
+            return vm._config.bars.quantiles.colorsOnHover[1];//"#e65158";
+          }else if(total <= vm._quantiles[3]){
+            return vm._config.bars.quantiles.colorsOnHover[2];//"#c20216";
+          }else if(total <= vm._quantiles[4]){
+            return vm._config.bars.quantiles.colorsOnHover[3];//"#750000";
+          }else if(total <= vm._quantiles[5]){
+            return vm._config.bars.quantiles.colorsOnHover[4];//"#480000";
+          }
         }
 
       }
