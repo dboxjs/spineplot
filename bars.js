@@ -28,6 +28,12 @@ export default function(config) {
 
   //-------------------------------
   //User config functions
+  Bars.prototype.id = function(columnName) {
+    var vm = this;
+    vm._config.id = columnName;
+    return vm;
+  }
+
   Bars.prototype.x = function(columnName) {
     var vm = this;
     vm._config.x = columnName;
@@ -54,6 +60,12 @@ export default function(config) {
       vm._scales.color = colorScale;
       vm._config.colorScale = colorScale.range();
     }
+    return vm;
+  }
+
+  Bars.prototype.sortBy = function(columnName) {
+    var vm = this;
+    vm._config.sortBy = columnName;
     return vm;
   }
 
@@ -95,6 +107,12 @@ export default function(config) {
       return d;
     });
 
+    //@TODO - ALLOW MULITPLE SORTS
+    if(vm._config.sortBy){
+      vm._data = vm._data.sort(function(a, b) {
+        return a[vm._config.sortBy[0]] - b[vm._config.sortBy[0]];
+      });
+    }
     if(vm._config.bars.quantiles){
       vm._quantiles = vm._setQuantile(data);
       vm._minMax = d3.extent(data, function(d) { return +d[vm._config.color]; })
@@ -199,6 +217,13 @@ export default function(config) {
         .data(vm._data)
         .enter().append("rect")
           .attr("class", "bar")
+          .attr("id", function(d,i) {
+            var id = "bars-" + i;
+            if(vm._config.id){
+              id = "bars-" + d[vm._config.id];
+            }  
+            return id
+          })
           .attr("x", function(d) { return vm._config.xAxis.scale == 'linear' && vm._config.yAxis.scale == 'linear'? 0 : vm._scales.x(d[vm._config.x]); })
           .attr("y", function(d) { return vm._scales.y(d[vm._config.y]);})
           .attr("width", function(d){ return vm._scales.x.bandwidth ? vm._scales.x.bandwidth() : vm._scales.x(d[vm._config.x]) })
@@ -208,35 +233,36 @@ export default function(config) {
           })
           .style("opacity", 0.9)
           .on('mouseover', function(d,i) {
-            if (vm._config.data.onmouseover) { //External function call
-              vm._config.data.onmouseover.call(this, d, i);
-            }
-
             if(vm._config.bars.quantiles.colorsOnHover){ //OnHover colors
               d3.select(this).attr('fill', function(d) {
                   return vm._getQuantileColor(d[vm._config.color],'onHover');
               })
             }
-
             vm._tip.show(d, d3.select(this).node());
+
+            if (vm._config.data.onmouseover) { //External function call, must be after all the internal code; allowing the user to overide 
+              vm._config.data.onmouseover.call(this, d, i);
+            }
+
           })
           .on('mouseout', function(d,i) {
-            if (vm._config.data.onmouseout) { //External function call
-              vm._config.data.onmouseout.call(this, d, i)
-            }
-            
             if(vm._config.bars.quantiles.colorsOnHover){ //OnHover reset default color
               d3.select(this).attr('fill', function(d) {
                 return vm._getQuantileColor(d[vm._config.color],'default');
               })
             }
             vm._tip.hide();
+
+            if (vm._config.data.onmouseout) { //External function call, must be after all the internal code; allowing the user to overide 
+              vm._config.data.onmouseout.call(this, d, i)
+            }
           })
           .on('click', function(d,i) {
             if (vm._config.data.onclick) {
               vm._config.data.onclick.call(this, d, i)
             }
           });
+
     return vm;
   }
 
