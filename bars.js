@@ -98,6 +98,10 @@ export default function(config) {
     if(vm._config.data.filter){
       data = data.filter(vm._config.data.filter);
     }
+    //In case we want to filter observations
+    if(vm._config.data.filter){
+      data = data.filter(vm._config.data.filter);
+    }
   
     vm._data = data.map(function(d) {
       if(d[vm._config.x] == Number(d[vm._config.x]))
