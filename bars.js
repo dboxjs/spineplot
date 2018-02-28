@@ -155,7 +155,7 @@ export default function(config,api) {
       });
     }
 
-    if(vm._config.hasOwnProperty('bars') && vm._config.bars.hasOwnProperty('quantiles'){
+    if(vm._config.hasOwnProperty('bars') && vm._config.bars.hasOwnProperty('quantiles')){
       vm._quantiles = vm._setQuantile(data);
       vm._minMax = d3.extent(data, function(d) { return +d[vm._config.color]; })
     }
