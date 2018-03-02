@@ -11,7 +11,7 @@ export default function(config,helper) {
 
     vm._config = config ? config : {};
     vm._data = [];
-    vm._config.colorScale = d3.schemeCategory20c;
+    vm._config.fillScale = d3.schemeCategory20c;
     vm._config._format = function(d){
       if(d % 1 == 0){
         return d3.format(",.0f")(d);
@@ -73,9 +73,9 @@ export default function(config,helper) {
    * column name used for the domain values
    * @param {string} columnName 
    */
-  Bars.color = function(columnName) {
+  Bars.fill = function(columnName) {
     var vm = this;
-    vm._config.color = columnName;
+    vm._config.fill = columnName;
     return vm;
   }
 
@@ -83,15 +83,15 @@ export default function(config,helper) {
    * array of values used 
    * @param {array or scale} columnName 
    */
-  Bars.colorScale = function(colorScale) {
+  Bars.colors = function(colorScale) {
     var vm = this;
     if(Array.isArray(colorScale)) {
       //Using an array of colors for the range 
-      vm._config.colorScale = colorScale;
+      vm._config.fillScale = colorScale;
     } else {
       //Using a preconfigured d3.scale
       vm._scales.color = colorScale;
-      vm._config.colorScale = colorScale.range();
+      vm._config.fillScale = colorScale.range();
     }
     return vm;
   }
@@ -159,7 +159,7 @@ export default function(config,helper) {
 
     if(vm._config.hasOwnProperty('quantiles')){
       vm._quantiles = vm._setQuantile(data);
-      vm._minMax = d3.extent(data, function(d) { return +d[vm._config.color]; })
+      vm._minMax = d3.extent(data, function(d) { return +d[vm._config.fill]; })
     }
       
     return vm;
@@ -312,15 +312,11 @@ export default function(config,helper) {
     //vm.chart.scales.x = vm._scales.x;
     //vm.chart.scales.y = vm._scales.y;
 
-    if(!vm._scales.hasOwnProperty('color')){
-      if(vm._config.hasOwnProperty('colorScale'))
-        vm._scales.color = d3.scaleOrdinal(vm._config.colorScale);
-      else
-        vm._scales.color = d3.scaleOrdinal(d3.schemeCategory10);
-    }
-    
-    if(vm._config.hasOwnProperty('quantiles'))
-      vm._scales.color = false;
+    if(vm._config.hasOwnProperty('colors'))
+      vm._scales.color = d3.scaleOrdinal(vm._config.fills);
+    else
+      vm._scales.color = d3.scaleOrdinal(d3.schemeCategory10);
+  
     return vm;
   }
 
@@ -367,13 +363,13 @@ export default function(config,helper) {
           return vm._scales.y.bandwidth ? vm._scales.y.bandwidth() :  vm.chart.height - vm._scales.y(d[vm._config.y]); 
         })
         .attr("fill", function(d){             
-          return vm._scales.color !== false ? vm._scales.color(d[vm._config.color]): vm._getQuantileColor(d[vm._config.color],'default');
+          return vm._scales.color !== false ? vm._scales.color(d[vm._config.fill]): vm._getQuantileColor(d[vm._config.fill],'default');
         })
         .style("opacity", 0.9)
         .on('mouseover', function(d,i) {
           if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover colors
             d3.select(this).attr('fill', function(d) {
-                return vm._getQuantileColor(d[vm._config.color],'onHover');
+                return vm._getQuantileColor(d[vm._config.fill],'onHover');
             })
           }
           vm._tip.show(d, d3.select(this).node());
@@ -386,7 +382,7 @@ export default function(config,helper) {
         .on('mouseout', function(d,i) {
           if(vm._config.quantiles.colorsOnHover){ //OnHover reset default color
             d3.select(this).attr('fill', function(d) {
-              return vm._getQuantileColor(d[vm._config.color],'default');
+              return vm._getQuantileColor(d[vm._config.fill],'default');
             })
           }
           vm._tip.hide();
@@ -435,7 +431,7 @@ export default function(config,helper) {
         .on('mouseover', function(d,i) {
           if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover colors
             d3.select(this).attr('fill', function(d) {
-                return vm._getQuantileColor(d[vm._config.color],'onHover');
+                return vm._getQuantileColor(d[vm._config.fill],'onHover');
             })
           }
           vm._tip.show(d, d3.select(this).node());
@@ -449,7 +445,7 @@ export default function(config,helper) {
         .on('mouseout', function(d,i) {
           if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover colors
             d3.select(this).attr('fill', function(d) {
-              return vm._getQuantileColor(d[vm._config.color],'default');
+              return vm._getQuantileColor(d[vm._config.fill],'default');
             })
           }
           vm._tip.hide();
@@ -489,7 +485,7 @@ export default function(config,helper) {
         .on('mouseover', function(d,i) {
           if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover colors
             d3.select(this).attr('fill', function(d) {
-                return vm._getQuantileColor(d[vm._config.color],'onHover');
+                return vm._getQuantileColor(d[vm._config.fill],'onHover');
             })
           }
           vm._tip.show(d, d3.select(this).node());
@@ -503,7 +499,7 @@ export default function(config,helper) {
         .on('mouseout', function(d,i) {
           if(vm._config.quantiles.colorsOnHover){ //OnHover reset default color
             d3.select(this).attr('fill', function(d) {
-              return vm._getQuantileColor(d[vm._config.color],'default');
+              return vm._getQuantileColor(d[vm._config.fill],'default');
             })
           }
           vm._tip.hide();
@@ -549,7 +545,7 @@ export default function(config,helper) {
         .on('mouseover', function(d,i) {
           if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover colors
             d3.select(this).attr('fill', function(d) {
-                return vm._getQuantileColor(d[vm._config.color],'onHover');
+                return vm._getQuantileColor(d[vm._config.fill],'onHover');
             })
           }
           vm._tip.show(d, d3.select(this).node());
@@ -563,7 +559,7 @@ export default function(config,helper) {
         .on('mouseout', function(d,i) {
           if(vm._config.quantiles.colorsOnHover){ //OnHover reset default color
             d3.select(this).attr('fill', function(d) {
-              return vm._getQuantileColor(d[vm._config.color],'default');
+              return vm._getQuantileColor(d[vm._config.fill],'default');
             })
           }
           vm._tip.hide();
@@ -611,7 +607,7 @@ export default function(config,helper) {
         .on('mouseover', function(d,i) {
           if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover colors
             d3.select(this).attr('fill', function(d) {
-                return vm._getQuantileColor(d[vm._config.color],'onHover');
+                return vm._getQuantileColor(d[vm._config.fill],'onHover');
             })
           }
           vm._tip.show(d, d3.select(this).node());
@@ -625,7 +621,7 @@ export default function(config,helper) {
         .on('mouseout', function(d,i) {
           if(vm._config.quantiles.colorsOnHover){ //OnHover reset default color
             d3.select(this).attr('fill', function(d) {
-              return vm._getQuantileColor(d[vm._config.color],'default');
+              return vm._getQuantileColor(d[vm._config.fill],'default');
             })
           }
           vm._tip.hide();
@@ -653,7 +649,7 @@ export default function(config,helper) {
     }
 
     data.forEach(function(d){      
-      values.push(+d[vm._config.color]);
+      values.push(+d[vm._config.fill]);
     });
 
     values.sort(d3.ascending);
