@@ -11,21 +11,11 @@ export default function(config,helper) {
 
     vm._config = config ? config : {};
     vm._data = [];
-    vm._config.fillScale = d3.schemeCategory20c;
-    vm._config._format = function(d){
-      if(d % 1 == 0){
-        return d3.format(",.0f")(d);
-      } else if(d < 1 && d > 0) {
-        return d3.format(",.2f")(d);
-      } else {
-        return d3.format(",.1f")(d);
-      }
-    };
     vm._scales = {};
     vm._tip = d3.tip()
       .attr('class', 'd3-tip')
       .direction('n')
-      .html(vm._config.tip || function(d){ return vm._config._format(d[vm._config.y])});
+      .html(vm._config.tip || function(d){ return vm.utils.format(d[vm._config.y])});
   };
 
 
@@ -83,15 +73,14 @@ export default function(config,helper) {
    * array of values used 
    * @param {array or scale} columnName 
    */
-  Bars.colors = function(colorScale) {
+  Bars.colors = function(colors) {
     var vm = this;
-    if(Array.isArray(colorScale)) {
+    if(Array.isArray(colors)) {
       //Using an array of colors for the range 
-      vm._config.fillScale = colorScale;
+      vm._config.colors = colors;
     } else {
       //Using a preconfigured d3.scale
-      vm._scales.color = colorScale;
-      vm._config.fillScale = colorScale.range();
+      vm._scales.color = colors;
     }
     return vm;
   }
@@ -107,9 +96,9 @@ export default function(config,helper) {
   Bars.format = function(format) {
     var vm = this;
     if (typeof format == 'function' || format instanceof Function)
-      vm._config._format = format;
+      vm.utils.format = format;
     else
-      vm._config._format = d3.format(format);
+      vm.utils.format = d3.format(format);
     return vm;
   }
 
@@ -190,7 +179,7 @@ export default function(config,helper) {
         column: vm._config.y,
         type: vm._config.yAxis.scale,
         range: [vm.chart.height, 0],
-        minZero: vm._config.xAxis.minZero
+        minZero: vm._config.yAxis.minZero
       };
       vm._scales.y = vm.utils.generateScale(vm._data, config);
     }
@@ -223,7 +212,7 @@ export default function(config,helper) {
         type: vm._config.yAxis.scale,
         groupBy: 'data', 
         range: [vm.chart.height, 0],
-        minZero: vm._config.xAxis.minZero
+        minZero: vm._config.yAxis.minZero
       };
       vm._scales.y = vm.utils.generateScale(vm._data, config);
     }
@@ -236,7 +225,7 @@ export default function(config,helper) {
           type: vm._config.yAxis.scale,
           groupBy: 'parent', 
           range: [0, vm.chart.height],
-          minZero: vm._config.xAxis.minZero
+          minZero: vm._config.yAxis.minZero
       };
       vm._scales.y = vm.utils.generateScale(vm._data, config);
 
@@ -280,7 +269,7 @@ export default function(config,helper) {
         stackBy: 'data',
         type: vm._config.yAxis.scale,
         range: [vm.chart.height, 0],
-        minZero: vm._config.xAxis.minZero
+        minZero: vm._config.yAxis.minZero
       };
       vm._scales.y = vm.utils.generateScale(vm._data, config);
     }
@@ -303,7 +292,7 @@ export default function(config,helper) {
         stackBy: 'parent',
         type: vm._config.yAxis.scale,
         range: [vm.chart.height, 0],
-        minZero: vm._config.xAxis.minZero
+        minZero: vm._config.yAxis.minZero
       };
       vm._scales.y = vm.utils.generateScale(vm._data, config);
     }
@@ -313,7 +302,7 @@ export default function(config,helper) {
     //vm.chart.scales.y = vm._scales.y;
 
     if(vm._config.hasOwnProperty('colors'))
-      vm._scales.color = d3.scaleOrdinal(vm._config.fills);
+      vm._scales.color = d3.scaleOrdinal(vm._config.colors);
     else
       vm._scales.color = d3.scaleOrdinal(d3.schemeCategory10);
   
@@ -408,7 +397,7 @@ export default function(config,helper) {
   Bars._drawGroupByXAxis = function(){
     var vm = this;
     vm._tip.html(vm._config.tip || function(d){ 
-      return d.key + '<br>' +vm._config._format(d.value)
+      return d.key + '<br>' +vm.utils.format(d.value)
     });
 
     vm.chart.svg().call(vm._tip);
@@ -464,7 +453,7 @@ export default function(config,helper) {
   Bars._drawGroupByYAxis = function(){
     var vm = this;
     vm._tip.html(vm._config.tip || function(d){ 
-      return d.key + '<br>' +vm._config._format(d.value)
+      return d.key + '<br>' +vm.utils.format(d.value)
     });
 
     vm.chart.svg().call(vm._tip);
@@ -524,7 +513,7 @@ export default function(config,helper) {
           cat = k;
         }
       }
-      return cat + '<br>' +vm._config._format(d[1]-d[0])
+      return cat + '<br>' +vm.utils.format(d[1]-d[0])
     });
 
     vm.chart.svg().call(vm._tip);
@@ -587,7 +576,7 @@ export default function(config,helper) {
           cat = k;
         }
       }
-      return cat + '<br>' +vm._config._format(d[1]-d[0])
+      return cat + '<br>' +vm.utils.format(d[1]-d[0])
     });
 
     vm.chart.svg().call(vm._tip);
