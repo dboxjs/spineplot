@@ -369,7 +369,7 @@ export default function(config,helper) {
 
         })
         .on('mouseout', function(d,i) {
-          if(vm._config.quantiles.colorsOnHover){ //OnHover reset default color
+          if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover reset default color
             d3.select(this).attr('fill', function(d) {
               return vm._getQuantileColor(d[vm._config.fill],'default');
             })
@@ -486,7 +486,7 @@ export default function(config,helper) {
 
         })
         .on('mouseout', function(d,i) {
-          if(vm._config.quantiles.colorsOnHover){ //OnHover reset default color
+          if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover reset default color
             d3.select(this).attr('fill', function(d) {
               return vm._getQuantileColor(d[vm._config.fill],'default');
             })
@@ -546,7 +546,7 @@ export default function(config,helper) {
 
         })
         .on('mouseout', function(d,i) {
-          if(vm._config.quantiles.colorsOnHover){ //OnHover reset default color
+          if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover reset default color
             d3.select(this).attr('fill', function(d) {
               return vm._getQuantileColor(d[vm._config.fill],'default');
             })
@@ -608,7 +608,7 @@ export default function(config,helper) {
 
         })
         .on('mouseout', function(d,i) {
-          if(vm._config.quantiles.colorsOnHover){ //OnHover reset default color
+          if(vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){ //OnHover reset default color
             d3.select(this).attr('fill', function(d) {
               return vm._getQuantileColor(d[vm._config.fill],'default');
             })
@@ -713,7 +713,7 @@ export default function(config,helper) {
           }
         }
 
-        if(type == 'onHover' && vm._config.quantiles.colorsOnHover){
+        if(type == 'onHover' && vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')){
           if(total <= vm._quantiles[1]){
             return vm._config.quantiles.colorsOnHover[0];//"#f7c7c5";
           }else if(total <= vm._quantiles[2]){
