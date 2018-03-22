@@ -1,2 +1,2 @@
-# bars
-Bars Layer
+# spineplot
+Spineplot chart

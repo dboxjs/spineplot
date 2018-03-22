@@ -7,9 +7,9 @@ import istanbul from 'rollup-plugin-istanbul';
 import uglify from 'rollup-plugin-uglify';
 
 export default {
-  entry: 'scatter.js',
+  entry: 'spineplot.js',
   format: 'cjs',
-  moduleName: 'dbox-scatter',
+  moduleName: 'dbox-spineplot',
   plugins: [
     resolve({ jsnext: true }),
     commonjs(),
@@ -22,6 +22,6 @@ export default {
     }),
     uglify()
   ],
-  dest: 'dist/scatter.js',
+  dest: 'dist/spineplot.js',
   sourceMap: 'inline'
 };

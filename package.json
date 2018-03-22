@@ -1,14 +1,14 @@
 {
-  "name": "@dboxjs/bars",
+  "name": "@dboxjs/spineplot",
   "version": "0.0.2",
-  "description": "A bar-chart layer for dbox",
-  "main": "bars.js",
+  "description": "A spineplot layer for dbox",
+  "main": "spineplot.js",
   "scripts": {
     "test": "mocha"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dboxjs/bars.git"
+    "url": "git+https://github.com/dboxjs/spineplot.git"
   },
   "keywords": [
     "d3",
@@ -19,9 +19,9 @@
   "author": "@dboxjs",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dboxjs/bars/issues"
+    "url": "https://github.com/dboxjs/spineplot/issues"
   },
-  "homepage": "https://github.com/dboxjs/bars#readme",
+  "homepage": "https://github.com/dboxjs/spineplot#readme",
   "devDependencies": {
     "babel-eslint": "^7.1.1",
     "babel-plugin-external-helpers": "^6.22.0",

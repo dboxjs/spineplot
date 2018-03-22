@@ -1,12 +1,12 @@
 /*
- * Simple Bar chart
+ * Simple Spineplot
  */
 export default function(config,helper) {
 
-  //Link Bars to the helper object in helper.js
-  var Bars = Object.create(helper);
+  //Link Spineplot to the helper object in helper.js
+  var Spineplot = Object.create(helper);
 
-  Bars.init = function(config){
+  Spineplot.init = function(config){
     var vm = this;
 
     vm._config = config ? config : {};
@@ -21,19 +21,19 @@ export default function(config,helper) {
 
   //-------------------------------
   //User config functions
-  Bars.id = function(columnName) {
+  Spineplot.id = function(columnName) {
     var vm = this;
     vm._config.id = columnName;
     return vm;
   }
 
-  Bars.x = function(columnName) {
+  Spineplot.x = function(columnName) {
     var vm = this;
     vm._config.x = columnName;
     return vm;
   }
 
-  Bars.y = function(columnName) {
+  Spineplot.y = function(columnName) {
     var vm = this;
     vm._config.y = columnName;
     return vm;
@@ -43,7 +43,7 @@ export default function(config,helper) {
    * Used to draw a bar chart with multiple bars per group
    * @param {array} columns 
    */
-  Bars.groupBy = function(columns) {
+  Spineplot.groupBy = function(columns) {
     var vm = this;
     vm._config.groupBy = columns;
     return vm;
@@ -53,7 +53,7 @@ export default function(config,helper) {
    * Used to draw a bar chart stacked with multiple bars per group
    * @param {array} columns 
    */
-  Bars.stackBy = function(columnName) {
+  Spineplot.stackBy = function(columnName) {
     var vm = this;
     vm._config.stackBy = columnName;
     return vm;
@@ -63,7 +63,7 @@ export default function(config,helper) {
    * column name used for the domain values
    * @param {string} columnName 
    */
-  Bars.fill = function(columnName) {
+  Spineplot.fill = function(columnName) {
     var vm = this;
     vm._config.fill = columnName;
     return vm;
@@ -73,7 +73,7 @@ export default function(config,helper) {
    * array of values used 
    * @param {array or scale} columnName 
    */
-  Bars.colors = function(colors) {
+  Spineplot.colors = function(colors) {
     var vm = this;
     if(Array.isArray(colors)) {
       //Using an array of colors for the range 
@@ -85,7 +85,7 @@ export default function(config,helper) {
     return vm;
   }
 
-  Bars.sortBy = function(option) {
+  Spineplot.sortBy = function(option) {
     //option = string [asc,desc] 
     //option = array for groupBy and stackBy
     var vm = this;
@@ -93,7 +93,7 @@ export default function(config,helper) {
     return vm;
   }
 
-  Bars.format = function(format) {
+  Spineplot.format = function(format) {
     var vm = this;
     if (typeof format == 'function' || format instanceof Function)
       vm.utils.format = format;
@@ -102,13 +102,13 @@ export default function(config,helper) {
     return vm;
   }
 
-  Bars.tip = function(tip) {
+  Spineplot.tip = function(tip) {
     var vm = this;
     vm._config.tip = tip; 
     return vm;
   }
 
-  Bars.legend = function(legend) {
+  Spineplot.legend = function(legend) {
     var vm = this;
     vm._config.legend = legend; 
     return vm;
@@ -117,7 +117,7 @@ export default function(config,helper) {
 
   //-------------------------------
   //Triggered by the chart.js;
-  Bars.data = function(data) {
+  Spineplot.data = function(data) {
     var vm = this;
   
     if(vm._config.filter){
@@ -154,7 +154,7 @@ export default function(config,helper) {
     return vm;
   }
 
-  Bars.scales = function(s) {
+  Spineplot.scales = function(s) {
     var vm = this;
     var config; 
     //vm._scales = s;
@@ -309,7 +309,7 @@ export default function(config,helper) {
     return vm;
   }
 
-  Bars.draw = function() {
+  Spineplot.draw = function() {
     var vm = this;
 
     if(vm._config.hasOwnProperty('groupBy') ){
@@ -331,9 +331,9 @@ export default function(config,helper) {
       .enter().append("rect")
         .attr("class", "bar")
         .attr("id", function(d,i) {
-          var id = "bars-" + i;
+          var id = "spineplot-" + i;
           if(vm._config.id){
-            id = "bars-" + d[vm._config.id];
+            id = "spineplot-" + d[vm._config.id];
           }  
           return id
         })
@@ -394,7 +394,7 @@ export default function(config,helper) {
   /** 
    * Draw bars grouped by 
   */
-  Bars._drawGroupByXAxis = function(){
+  Spineplot._drawGroupByXAxis = function(){
     var vm = this;
     vm._tip.html(vm._config.tip || function(d){ 
       return d.key + '<br>' +vm.utils.format(d.value)
@@ -450,7 +450,7 @@ export default function(config,helper) {
         });
   }
 
-  Bars._drawGroupByYAxis = function(){
+  Spineplot._drawGroupByYAxis = function(){
     var vm = this;
     vm._tip.html(vm._config.tip || function(d){ 
       return d.key + '<br>' +vm.utils.format(d.value)
@@ -504,7 +504,7 @@ export default function(config,helper) {
         });
   }
 
-  Bars._drawStackByXAxis = function(){
+  Spineplot._drawStackByXAxis = function(){
     var vm = this;
     vm._tip.html(vm._config.tip || function(d){ 
       var cat = ''
@@ -566,7 +566,7 @@ export default function(config,helper) {
 
   }
 
-  Bars._drawStackByYAxis = function(){
+  Spineplot._drawStackByYAxis = function(){
     var vm = this;
 
     vm._tip.html(vm._config.tip || function(d){ 
@@ -627,7 +627,7 @@ export default function(config,helper) {
         
   }
 
-  Bars._setQuantile = function(data){
+  Spineplot._setQuantile = function(data){
     var vm = this; 
     var values = [];
     var quantile = []; 
@@ -679,7 +679,7 @@ export default function(config,helper) {
     return quantile;
   }
 
-  Bars._getQuantileColor = function(d,type){
+  Spineplot._getQuantileColor = function(d,type){
     var vm = this; 
     var total = parseFloat(d);
 
@@ -743,6 +743,6 @@ export default function(config,helper) {
 
   }
 
-  Bars.init(config);
-  return Bars;
+  Spineplot.init(config);
+  return Spineplot;
 }
