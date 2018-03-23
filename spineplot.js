@@ -10,13 +10,14 @@ export default function (config, helper) {
     var vm = this;
 
     vm._config = config ? config : {};
+    vm._config.orientation = 'horizontal';
     vm._data = [];
     vm._scales = {};
     vm._tip = d3.tip()
       .attr('class', 'd3-tip')
       .direction('n')
       .html(vm._config.tip || function (d) {
-        return vm.utils.format(d[vm._config.y]);
+        return vm.utils.format(d[vm._config.value]);
       });
   };
 
@@ -29,25 +30,21 @@ export default function (config, helper) {
     return vm;
   };
 
-  Spineplot.x = function (columnName) {
+  Spineplot.category = function (columnName) {
     var vm = this;
-    vm._config.x = columnName;
+    vm._config.category = columnName;
     return vm;
   };
 
-  Spineplot.y = function (columnName) {
+  Spineplot.value = function (columnName) {
     var vm = this;
-    vm._config.y = columnName;
+    vm._config.value = columnName;
     return vm;
   };
 
-  /**
-   * Used to draw a bar chart with multiple bars per group
-   * @param {array} columns 
-   */
-  Spineplot.groupBy = function (columns) {
+  Spineplot.orientation = function (orientation) {
     var vm = this;
-    vm._config.groupBy = columns;
+    vm._config.orientation = orientation;
     return vm;
   };
 
@@ -127,19 +124,17 @@ export default function (config, helper) {
       data = data.filter(vm._config.filter);
     }
 
-    if (vm._config.hasOwnProperty('stackBy') && Array.isArray(vm._config.stackBy) && vm._config.stackBy.length > 0) {
-      // Used in a stackbar, transpose the data into layers 
-      vm._data = d3.stack().keys(vm._config.stackBy)(data);
-    } else {
-      // Normal bar, save the data as numbers 
-      vm._data = data.map(function (d) {
-        if (d[vm._config.x] == Number(d[vm._config.x]))
-          d[vm._config.x] = +d[vm._config.x];
-        if (d[vm._config.y] == Number(d[vm._config.y]))
-          d[vm._config.y] = +d[vm._config.y];
-        return d;
-      });
-    }
+    var total = 0;
+    vm._data = data.map(function(d) {
+      d.x0 = total;
+      d.x1 = total + d[vm._config.value];
+      console.log(vm._config.value, d);
+      total += +d[vm._config.value];
+      if (vm._config.hasOwnProperty('stackBy') && Array.isArray(vm._config.stackBy) && vm._config.stackBy.length > 0) {
+        d.stackValues = d3.stack().keys(vm._config.stackBy)([d]);
+      }
+      return d;
+    });
 
     //@TODO - ALLOW MULITPLE SORTS
     if (vm._config.sortBy) {
@@ -152,153 +147,87 @@ export default function (config, helper) {
       vm._quantiles = vm._setQuantile(data);
       vm._minMax = d3.extent(data, function (d) {
         return +d[vm._config.fill];
-      });
+      })
     }
 
     return vm;
   };
 
-  Spineplot.scales = function (cales) {
+  Spineplot.scales = function (s) {
     var vm = this;
     var config;
-    //vm._scales = scales;
+    //vm._scales = s;
     /* Use
-     * vm._config.x
-     * vm._config.xAxis.scale
-     * vm._config.y
-     * vm._config.yAxis.scale
+     * vm._config.category
+     * vm._config.categoryAxis.scale
+     * vm._config.value
+     * vm._config.valueAxis.scale
      * vm._data
      */
     //Normal bars 
-    if (vm._config.hasOwnProperty('x') && vm._config.hasOwnProperty('y')) {
+    if (vm._config.hasOwnProperty('category') && vm._config.hasOwnProperty('value')) {
       config = {
-        column: vm._config.x,
-        type: vm._config.xAxis.scale,
+        column: 'x1',
+        type: 'linear',
         range: [0, vm.chart.width],
-        minZero: vm._config.xAxis.minZero
+        minZero: true
       };
       vm._scales.x = vm.utils.generateScale(vm._data, config);
 
       config = {
-        column: vm._config.y,
-        type: vm._config.yAxis.scale,
+        column: vm._config.value,
+        type: 'linear',
         range: [vm.chart.height, 0],
-        minZero: vm._config.yAxis.minZero
+        minZero: true
       };
       vm._scales.y = vm.utils.generateScale(vm._data, config);
-    }
-
-    //GroupBy bars on the xAxis
-    if (vm._config.hasOwnProperty('x') && vm._config.hasOwnProperty('groupBy')) {
-      /* Generate x scale */
-      config = {
-        column: vm._config.x,
-        type: vm._config.xAxis.scale,
-        groupBy: 'parent',
-        range: [0, vm.chart.width],
-        minZero: vm._config.xAxis.minZero
-      };
-      vm._scales.x = vm.utils.generateScale(vm._data, config);
-
-      /* Generate groupBy scale */
-      config = {
-        column: vm._config.groupBy,
-        type: 'band',
-        groupBy: 'children',
-        range: [0, vm._scales.x.bandwidth()],
-      };
-      vm._scales.groupBy = vm.utils.generateScale(vm._data, config);
-      //vm.chart.scales.groupBy = vm._scales.groupBy; 
-
-      /* Generate y scale */
-      config = {
-        column: vm._config.groupBy,
-        type: vm._config.yAxis.scale,
-        groupBy: 'data',
-        range: [vm.chart.height, 0],
-        minZero: vm._config.yAxis.minZero
-      };
-      vm._scales.y = vm.utils.generateScale(vm._data, config);
-    }
-
-    //GroupBy bars on the yAxis
-    if (vm._config.hasOwnProperty('y') && vm._config.hasOwnProperty('groupBy')) {
-      /* Generate y scale */
-      config = {
-        column: vm._config.y,
-        type: vm._config.yAxis.scale,
-        groupBy: 'parent',
-        range: [0, vm.chart.height],
-        minZero: vm._config.yAxis.minZero
-      };
-      vm._scales.y = vm.utils.generateScale(vm._data, config);
-
-      /* Generate groupBy scale */
-      config = {
-        column: vm._config.groupBy,
-        type: 'band',
-        groupBy: 'children',
-        range: [0, vm._scales.y.bandwidth()],
-      };
-      vm._scales.groupBy = vm.utils.generateScale(vm._data, config);
-      //vm.chart.scales.groupBy = vm._scales.groupBy; 
-
-      /* Generate x scale */
-      config = {
-        column: vm._config.groupBy,
-        type: vm._config.xAxis.scale,
-        groupBy: 'data',
-        range: [0, vm.chart.width],
-        minZero: vm._config.xAxis.minZero
-      };
-      vm._scales.x = vm.utils.generateScale(vm._data, config);
     }
 
 
     //Stack bars on the xAxis
-    if (vm._config.hasOwnProperty('x') && vm._config.hasOwnProperty('stackBy')) {
+    if (vm._config.orientation === 'horizontal' && vm._config.hasOwnProperty('stackBy')) {
       /* Generate x scale */
       config = {
-        column: vm._config.x,
-        type: vm._config.xAxis.scale,
-        stackBy: 'parent',
+        column: 'x1',
+        type: 'linear',
         range: [0, vm.chart.width],
-        minZero: vm._config.xAxis.minZero
+        minZero: true
       };
       vm._scales.x = vm.utils.generateScale(vm._data, config);
 
+      console.log(vm._data);
       /* Generate y scale */
       config = {
         column: '',
-        stackBy: 'data',
-        type: vm._config.yAxis.scale,
+        type: 'linear',
         range: [vm.chart.height, 0],
-        minZero: vm._config.yAxis.minZero
+        minZero: true
       };
-      vm._scales.y = vm.utils.generateScale(vm._data, config);
+      vm._scales.y = d3.scaleLinear().range(config.range).domain([0,1]);
     }
 
     //Stack bars on the yAxis
-    if (vm._config.hasOwnProperty('y') && vm._config.hasOwnProperty('stackBy')) {
+    if (vm._config.orientation === 'vertical' && vm._config.hasOwnProperty('stackBy')) {
       /* Generate x scale */
       config = {
         column: '',
-        type: vm._config.xAxis.scale,
-        stackBy: 'data',
-        range: [0, vm.chart.width],
-        minZero: vm._config.xAxis.minZero
+        txpe: 'linear',
+        range: [vm.chart.height, 0],
+        minZero: true
       };
-      vm._scales.x = vm.utils.generateScale(vm._data, config);
+      vm._scales.x = d3.scaleLinear().range(config.range).domain([0, 1]);
 
       /* Generate y scale */
       config = {
-        column: vm._config.y,
-        stackBy: 'parent',
-        type: vm._config.yAxis.scale,
-        range: [vm.chart.height, 0],
-        minZero: vm._config.yAxis.minZero
+        column: vm._config.value,
+        type: 'linear',
+        range: [0, vm.chart.width],
+        minZero: true
       };
       vm._scales.y = vm.utils.generateScale(vm._data, config);
+
+      console.log(vm._data);
+      
     }
 
 
@@ -316,19 +245,22 @@ export default function (config, helper) {
   Spineplot.draw = function () {
     var vm = this;
 
-    if (vm._config.hasOwnProperty('groupBy')) {
-      if (vm._config.hasOwnProperty('x')) vm._drawGroupByXAxis();
-      if (vm._config.hasOwnProperty('y')) vm._drawGroupByYAxis();
-      return vm;
-    }
-
     if (vm._config.hasOwnProperty('stackBy')) {
-      if (vm._config.hasOwnProperty('x')) vm._drawStackByXAxis();
-      if (vm._config.hasOwnProperty('y')) vm._drawStackByYAxis();
+      if (vm._config.orientation === 'horizontal') vm._drawStackByXAxis();
+      if (vm._config.orientation === 'vertical') vm._drawStackByYAxis();
       return vm;
     }
 
     vm.chart.svg().call(vm._tip);
+
+    vm.chart.svg().selectAll('.bar')
+      .data(vm._data)
+      .enter()
+      .append('text')
+      .attr('x', d => { console.log(d); return vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2); })
+      .attr('y', vm.chart.height + 20)
+      .attr('text-anchor', 'middle')
+      .text(d => d[vm._config.category]);
 
     vm.chart.svg().selectAll('.bar')
       .data(vm._data)
@@ -342,18 +274,17 @@ export default function (config, helper) {
         return id;
       })
       .attr('x', function (d) {
-        var value = vm._scales.x(d[vm._config.x]);
-        if (vm._config.xAxis.scale == 'linear') value = 0;
+        var value = vm._scales.x(d.x0);
         return value;
       })
       .attr('y', function (d) {
-        return vm._scales.y(d[vm._config.y]);
+        return 0;
       })
       .attr('width', function (d) {
-        return vm._scales.x.bandwidth ? vm._scales.x.bandwidth() : vm._scales.x(d[vm._config.x]);
+        return vm._scales.x(d[vm._config.value]);
       })
       .attr('height', function (d) {
-        return vm._scales.y.bandwidth ? vm._scales.y.bandwidth() : vm.chart.height - vm._scales.y(d[vm._config.y]);
+        return vm.chart.height;
       })
       .attr('fill', function (d) {
         return vm._scales.color !== false ? vm._scales.color(d[vm._config.fill]) : vm._getQuantileColor(d[vm._config.fill], 'default');
@@ -381,12 +312,12 @@ export default function (config, helper) {
         vm._tip.hide();
 
         if (vm._config.hasOwnProperty('onmouseout')) { //External function call, must be after all the internal code; allowing the user to overide 
-          vm._config.onmouseout.call(this, d, i);
+          vm._config.onmouseout.call(this, d, i)
         }
       })
       .on('click', function (d, i) {
         if (vm._config.hasOwnProperty('click')) {
-          vm._config.onclick.call(this, d, i);
+          vm._config.onclick.call(this, d, i)
         }
       });
 
@@ -398,184 +329,51 @@ export default function (config, helper) {
   /** 
    * Draw bars grouped by 
    */
-  Spineplot._drawGroupByXAxis = function () {
-    var vm = this;
-    vm._tip.html(vm._config.tip || function (d) {
-      return d.key + '<br>' + vm.utils.format(d.value);
-    });
-
-    vm.chart.svg().call(vm._tip);
-
-    vm.chart.svg().append('g')
-      .selectAll('g')
-      .data(vm._data)
-      .enter().append('g')
-      .attr('transform', function (d) {
-        return 'translate(' + vm._scales.x(d[vm._config.x]) + ',0)';
-      })
-      .selectAll('rect')
-      .data(function (d) {
-        return vm._config.groupBy.map(function (key) {
-          return {
-            key: key,
-            value: d[key]
-          };
-        });
-      })
-      .enter().append('rect')
-      .attr('x', function (d) {
-        return vm._scales.groupBy(d.key);
-      })
-      .attr('y', function (d) {
-        return vm._scales.y(d.value);
-      })
-      .attr('width', vm._scales.groupBy.bandwidth())
-      .attr('height', function (d) {
-        return vm.chart.height - vm._scales.y(d.value);
-      })
-      .attr('fill', function (d) {
-        return vm._scales.color(d.key);
-      })
-      .on('mouseover', function (d, i) {
-        if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
-          d3.select(this).attr('fill', function (d) {
-            return vm._getQuantileColor(d[vm._config.fill], 'onHover');
-          });
-        }
-        vm._tip.show(d, d3.select(this).node());
-
-        if (vm._config.hasOwnProperty('onmouseover')) {
-          //External function call. It must be after all the internal code; allowing the user to overide 
-          vm._config.onmouseover.call(this, d, i);
-        }
-
-      })
-      .on('mouseout', function (d, i) {
-        if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
-          d3.select(this).attr('fill', function (d) {
-            return vm._getQuantileColor(d[vm._config.fill], 'default');
-          });
-        }
-        vm._tip.hide();
-
-        if (vm._config.hasOwnProperty('onmouseout')) { //External function call, must be after all the internal code; allowing the user to overide 
-          vm._config.onmouseout.call(this, d, i);
-        }
-      })
-      .on('click', function (d, i) {
-        if (vm._config.hasOwnProperty('click')) {
-          vm._config.onclick.call(this, d, i);
-        }
-      });
-  };
-
-  Spineplot._drawGroupByYAxis = function () {
-    var vm = this;
-    vm._tip.html(vm._config.tip || function (d) {
-      return d.key + '<br>' + vm.utils.format(d.value);
-    });
-
-    vm.chart.svg().call(vm._tip);
-
-    vm.chart.svg().append('g')
-      .selectAll('g')
-      .data(vm._data)
-      .enter().append('g')
-      .attr('transform', function (d) {
-        return 'translate(0,' + vm._scales.y(d[vm._config.y]) + ' )';
-      })
-      .selectAll('rect')
-      .data(function (d) {
-        return vm._config.groupBy.map(function (key) {
-          return {
-            key: key,
-            value: d[key]
-          };
-        });
-      })
-      .enter().append('rect')
-      .attr('y', function (d) {
-        return vm._scales.groupBy(d.key);
-      })
-      .attr('x', 0)
-      .attr('width', function (d) {
-        return vm._scales.x(d.value);
-      })
-      .attr('height', vm._scales.groupBy.bandwidth())
-      .attr('fill', function (d) {
-        return vm._scales.color(d.key);
-      })
-      .on('mouseover', function (d, i) {
-        if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
-          d3.select(this).attr('fill', function (d) {
-            return vm._getQuantileColor(d[vm._config.fill], 'onHover');
-          });
-        }
-        vm._tip.show(d, d3.select(this).node());
-
-        if (vm._config.hasOwnProperty('onmouseover')) {
-          //External function call. It must be after all the internal code; allowing the user to overide 
-          vm._config.onmouseover.call(this, d, i);
-        }
-
-      })
-      .on('mouseout', function (d, i) {
-        if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover reset default color
-          d3.select(this).attr('fill', function (d) {
-            return vm._getQuantileColor(d[vm._config.fill], 'default');
-          });
-        }
-        vm._tip.hide();
-
-        if (vm._config.hasOwnProperty('onmouseout')) { //External function call, must be after all the internal code; allowing the user to overide 
-          vm._config.onmouseout.call(this, d, i);
-        }
-      })
-      .on('click', function (d, i) {
-        if (vm._config.hasOwnProperty('click')) {
-          vm._config.onclick.call(this, d, i);
-        }
-      });
-  };
-
   Spineplot._drawStackByXAxis = function () {
     var vm = this;
     vm._tip.html(vm._config.tip || function (d) {
-      var cat = '';
-      for (var k in d.data) {
-        if ((d[1] - d[0]) == d.data[k]) {
-          cat = k;
-        }
-      }
-      return cat + '<br>' + vm.utils.format(d[1] - d[0]);
+      console.log(d);
+      var cat = d.key;
+      cat += '</br>' + vm.utils.format(d[0].data[d.key]);
+      return cat;
     });
 
     vm.chart.svg().call(vm._tip);
 
-    vm.chart.svg().append('g')
+    var groups = vm.chart.svg().append('g')
       .selectAll('g')
       .data(vm._data)
-      .enter().append('g')
-      .attr('fill', function (d) {
-        return vm._scales.color(d.key);
-      })
-      //.attr('transform', function(d) { return 'translate(0,'+ vm._scales.y(d[vm._config.y]) +' )'; })
+      .enter().append('g');
+
+    groups
+      .append('text')
+      .attr('x', d => { console.log(d); return vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2); })
+      .attr('y', vm.chart.height + 20)
+      .attr('text-anchor', 'middle')
+      .text(d => d[vm._config.category]);
+      
+    groups  //.attr('transform', function(d) { return 'translate(0,'+ vm._scales.y(d[vm._config.value]) +' )'; })
       .selectAll('rect')
       .data(function (d) {
-        return d;
+        return d.stackValues;
       })
       .enter().append('rect')
       .attr('y', function (d) {
-        return vm._scales.y(d[1]);
+        console.log(d[0]);
+        return d[0][1] ? vm._scales.y(d[0][1] / d[0].data[vm._config.value]) : vm._scales.y(0);
       })
       .attr('x', function (d) {
-        return vm._scales.x(d.data[vm._config.x]);
+        return vm._scales.x(d[0].data.x0);
       })
       .attr('width', function (d) {
-        return vm._scales.x.bandwidth();
+        return vm._scales.x(d[0].data[vm._config.value]);
       })
       .attr('height', function (d) {
-        return vm._scales.y(d[0]) - vm._scales.y(d[1]);
+        return vm._scales.y((d[0][0] / d[0].data[vm._config.value])) - vm._scales.y(d[0][1] / d[0].data[vm._config.value]);
+      })
+      .attr('fill', function (d) {
+        console.log('fill', d);
+        return vm._scales.color(d[vm._config.fill]);
       })
       .on('mouseover', function (d, i) {
         if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
@@ -614,13 +412,13 @@ export default function (config, helper) {
     var vm = this;
 
     vm._tip.html(vm._config.tip || function (d) {
-      var cat = '';
+      var cat = ''
       for (var k in d.data) {
         if ((d[1] - d[0]) == d.data[k]) {
           cat = k;
         }
       }
-      return cat + '<br>' + vm.utils.format(d[1] - d[0]);
+      return cat + '<br>' + vm.utils.format(d[1] - d[0])
     });
 
     vm.chart.svg().call(vm._tip);
@@ -638,13 +436,13 @@ export default function (config, helper) {
       })
       .enter().append('rect')
       .attr('y', function (d) {
-        return vm._scales.y(d.data[vm._config.y]);
+        return vm._scales.y(d.data[vm._config.value]);
       })
       .attr('x', function (d) {
         return vm._scales.x(d[0]);
       })
       .attr('height', function (d) {
-        return vm._scales.y.bandwidth();
+        return vm._scales.y.bandwidth()
       })
       .attr('width', function (d) {
         return vm._scales.x(d[1]) - vm._scales.x(d[0]);
@@ -653,7 +451,7 @@ export default function (config, helper) {
         if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
           d3.select(this).attr('fill', function (d) {
             return vm._getQuantileColor(d[vm._config.fill], 'onHover');
-          });
+          })
         }
         vm._tip.show(d, d3.select(this).node());
 
@@ -672,14 +470,15 @@ export default function (config, helper) {
         vm._tip.hide();
 
         if (vm._config.hasOwnProperty('onmouseout')) { //External function call, must be after all the internal code; allowing the user to overide 
-          vm._config.onmouseout.call(this, d, i);
+          vm._config.onmouseout.call(this, d, i)
         }
       })
       .on('click', function (d, i) {
         if (vm._config.hasOwnProperty('click')) {
-          vm._config.onclick.call(this, d, i);
+          vm._config.onclick.call(this, d, i)
         }
       });
+
   };
 
   Spineplot._setQuantile = function (data) {
@@ -711,13 +510,13 @@ export default function (config, helper) {
         quantile.push(0);
 
         for (var i = 1; i <= vm._config.quantiles.buckets - 1; i++) {
-          quantile.push(d3.quantile(aux, i * 1 / (vm._config.quantiles.buckets - 1)));
+          quantile.push(d3.quantile(aux, i * 1 / (vm._config.quantiles.buckets - 1)))
         }
 
       } else {
-        quantile.push(d3.quantile(values, 0));
+        quantile.push(d3.quantile(values, 0))
         for (var i = 1; i <= vm._config.quantiles.buckets; i++) {
-          quantile.push(d3.quantile(values, i * 1 / vm._config.quantiles.buckets));
+          quantile.push(d3.quantile(values, i * 1 / vm._config.quantiles.buckets))
         }
       }
 
@@ -746,12 +545,12 @@ export default function (config, helper) {
 
         if (vm._config && vm._config.bars.min !== undefined && vm._config.bars.max !== undefined) {
           if (total < vm._config.bars.min || total > vm._config.bars.max) {
-            console.log('outOfRangeColor', total, vm._config.bars.min, vm._config.bars.max);
+            console.log('outOfRangeColor', total, vm._config.bars.min, vm._config.bars.max)
             return vm._config.bars.quantiles.outOfRangeColor;
           }
         } else {
           if (total < vm._minMax[0] || total > vm._minMax[1]) {
-            console.log('outOfRangeColor', total, vm._config.bars.min, vm._config.bars.max);
+            console.log('outOfRangeColor', total, vm._config.bars.min, vm._config.bars.max)
             return vm._config.bars.quantiles.outOfRangeColor;
           }
         }
