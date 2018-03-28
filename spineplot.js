@@ -229,8 +229,6 @@ export default function (config, helper) {
       console.log(vm._data);
       
     }
-
-
     //vm.chart.scales.x = vm._scales.x;
     //vm.chart.scales.y = vm._scales.y;
 
@@ -253,74 +251,80 @@ export default function (config, helper) {
 
     vm.chart.svg().call(vm._tip);
 
-    vm.chart.svg().selectAll('.bar')
-      .data(vm._data)
-      .enter()
-      .append('text')
-      .attr('x', d => { console.log(d); return vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2); })
-      .attr('y', vm.chart.height + 20)
-      .attr('text-anchor', 'middle')
-      .text(d => d[vm._config.category]);
+    if (vm._config.orientation === 'horizontal') {
 
-    vm.chart.svg().selectAll('.bar')
-      .data(vm._data)
-      .enter().append('rect')
-      .attr('class', 'bar')
-      .attr('id', function (d, i) {
-        var id = 'spineplot-' + i;
-        if (vm._config.id) {
-          id = 'spineplot-' + d[vm._config.id];
-        }
-        return id;
-      })
-      .attr('x', function (d) {
-        var value = vm._scales.x(d.x0);
-        return value;
-      })
-      .attr('y', function (d) {
-        return 0;
-      })
-      .attr('width', function (d) {
-        return vm._scales.x(d[vm._config.value]);
-      })
-      .attr('height', function (d) {
-        return vm.chart.height;
-      })
-      .attr('fill', function (d) {
-        return vm._scales.color !== false ? vm._scales.color(d[vm._config.fill]) : vm._getQuantileColor(d[vm._config.fill], 'default');
-      })
-      .style('opacity', 0.9)
-      .on('mouseover', function (d, i) {
-        if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
-          d3.select(this).attr('fill', function (d) {
-            return vm._getQuantileColor(d[vm._config.fill], 'onHover');
-          });
-        }
-        vm._tip.show(d, d3.select(this).node());
+      vm.chart.svg().append('g')
+        .attr('class', 'x axis')
+        .attr('transform', 'translate(0,' + vm.chart.height + 20 + ')')
+        .selectAll('.tick')
+        .data(vm._data)
+        .enter()
+        .append('g')
+        .attr('class', 'tick')
+        .attr('transform', d => { 
+          console.log(d); 
+          const x = vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2);
+          return 'translate(' + x + ',0)'; 
+        })
+        .append('text')
+        .attr('text-anchor', 'middle')
+        .text(d => d[vm._config.category]);
 
-        if (vm._config.hasOwnProperty('onmouseover')) { //External function call, must be after all the internal code; allowing the user to overide 
-          vm._config.onmouseover.call(this, d, i);
-        }
+      vm.chart.svg().selectAll('.bar')
+        .data(vm._data)
+        .enter().append('rect')
+        .attr('class', 'bar')
+        .attr('id', (d, i) => {
+          var id = 'spineplot-' + i;
+          if (vm._config.id) {
+            id = 'spineplot-' + d[vm._config.id];
+          }
+          return id;
+        })
+        .attr('x', (d) => vm._scales.x(d.x0) )
+        .attr('y', 0)
+        .attr('width', d => vm._scales.x(d[vm._config.value]) )
+        .attr('height', vm.chart.height)
+        .attr('fill', (d) => {
+          return vm._scales.color !== false ? vm._scales.color(d[vm._config.fill]) : vm._getQuantileColor(d[vm._config.fill], 'default');
+        })
+        .attr('stroke', 'white')
+        .attr('stroke-width', 1)
+        .style('opacity', 0.9)
+        .on('mouseover', function(d, i) {
+          console.log(d, d3.select(this), d3.select(this).node());
 
-      })
-      .on('mouseout', function (d, i) {
-        if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover reset default color
-          d3.select(this).attr('fill', function (d) {
-            return vm._getQuantileColor(d[vm._config.fill], 'default');
-          });
-        }
-        vm._tip.hide();
 
-        if (vm._config.hasOwnProperty('onmouseout')) { //External function call, must be after all the internal code; allowing the user to overide 
-          vm._config.onmouseout.call(this, d, i)
-        }
-      })
-      .on('click', function (d, i) {
-        if (vm._config.hasOwnProperty('click')) {
-          vm._config.onclick.call(this, d, i)
-        }
-      });
+          if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
+            d3.select(this).attr('fill', function (d) {
+              return vm._getQuantileColor(d[vm._config.fill], 'onHover');
+            });
+          }
+          vm._tip.show(d, d3.select(this).node());
 
+          if (vm._config.hasOwnProperty('onmouseover')) { //External function call, must be after all the internal code; allowing the user to overide 
+            vm._config.onmouseover.call(this, d, i);
+          }
+
+        })
+        .on('mouseout', function (d, i) {
+          if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover reset default color
+            d3.select(this).attr('fill', function (d) {
+              return vm._getQuantileColor(d[vm._config.fill], 'default');
+            });
+          }
+          vm._tip.hide();
+
+          if (vm._config.hasOwnProperty('onmouseout')) { //External function call, must be after all the internal code; allowing the user to overide 
+            vm._config.onmouseout.call(this, d, i);
+          }
+        })
+        .on('click', function (d, i) {
+          if (vm._config.hasOwnProperty('click')) {
+            vm._config.onclick.call(this, d, i);
+          }
+        });
+    }
     return vm;
   };
 
@@ -340,20 +344,32 @@ export default function (config, helper) {
 
     vm.chart.svg().call(vm._tip);
 
+    /**
+     * x axis labels
+     */
+    vm.chart.svg().append('g')
+      .attr('class', 'x axis')
+      .attr('transform', 'translate(0,' + (vm.chart.height + 20) + ')')
+      .selectAll('g')
+      .data(vm._data)
+      .enter()
+      .append('g')
+      .attr('class', 'tick')
+      .attr('transform', d => {
+        console.log(d);        
+        const x = vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2);
+        return 'translate(' + x + ',0)';
+      })
+      .append('text')
+      .attr('text-anchor', 'middle')
+      .text(d => d[vm._config.category]);
+      
     var groups = vm.chart.svg().append('g')
       .selectAll('g')
       .data(vm._data)
       .enter().append('g');
-
-    groups
-      .append('text')
-      .attr('x', d => { console.log(d); return vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2); })
-      .attr('y', vm.chart.height + 20)
-      .attr('text-anchor', 'middle')
-      .text(d => d[vm._config.category]);
-      
-    groups  //.attr('transform', function(d) { return 'translate(0,'+ vm._scales.y(d[vm._config.value]) +' )'; })
-      .selectAll('rect')
+    
+    groups.selectAll('rect')
       .data(function (d) {
         return d.stackValues;
       })
@@ -371,6 +387,8 @@ export default function (config, helper) {
       .attr('height', function (d) {
         return vm._scales.y((d[0][0] / d[0].data[vm._config.value])) - vm._scales.y(d[0][1] / d[0].data[vm._config.value]);
       })
+      .attr('stroke', 'white')
+      .attr('stroke-width', 1)
       .attr('fill', function (d) {
         console.log('fill', d);
         return vm._scales.color(d[vm._config.fill]);
