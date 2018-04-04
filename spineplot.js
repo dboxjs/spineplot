@@ -203,7 +203,7 @@ export default function (config, helper) {
         range: [vm.chart.height, 0],
         minZero: true
       };
-      vm._scales.y = d3.scaleLinear().range(config.range).domain([0,1]);
+      vm._scales.y = d3.scaleLinear().range(config.range).domain([0, 1]);
     }
 
     //Stack bars on the yAxis
@@ -335,10 +335,13 @@ export default function (config, helper) {
    */
   Spineplot._drawStackByXAxis = function () {
     var vm = this;
+    console.log(vm);
     vm._tip.html(vm._config.tip || function (d) {
       console.log(d);
-      var cat = d.key;
-      cat += '</br>' + vm.utils.format(d[0].data[d.key]);
+      var cat = '<div>'
+      cat += '<span>' + d.key + '</span>';
+      cat += '</br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
+      cat += '</div>'
       return cat;
     });
 
@@ -430,13 +433,14 @@ export default function (config, helper) {
     var vm = this;
 
     vm._tip.html(vm._config.tip || function (d) {
-      var cat = ''
+      var html = '<div><span>' + d[vm._config.category] + '<span><br>';
       for (var k in d.data) {
         if ((d[1] - d[0]) == d.data[k]) {
-          cat = k;
+          html += '<span>' + k + '</span>';
         }
       }
-      return cat + '<br>' + vm.utils.format(d[1] - d[0])
+      html += '<br>' + vm.utils.format(d[1] - d[0])
+      return html;
     });
 
     vm.chart.svg().call(vm._tip);
