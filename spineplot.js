@@ -17,8 +17,14 @@ export default function (config, helper) {
       .attr('class', 'd3-tip')
       .direction('n')
       .html(vm._config.tip || function (d) {
-        return vm.utils.format(d[vm._config.value]);
-      });
+        console.log(d);
+        var html = '<div>';
+        html += '<span>' + d[vm._config.category] + '</span>';
+        html += '</br><span>' + vm.utils.format(d[vm._config.value]) + '</span>';
+        html += '</div>';
+        return html;
+       });
+
   };
 
 
@@ -132,6 +138,9 @@ export default function (config, helper) {
       total += +d[vm._config.value];
       if (vm._config.hasOwnProperty('stackBy') && Array.isArray(vm._config.stackBy) && vm._config.stackBy.length > 0) {
         d.stackValues = d3.stack().keys(vm._config.stackBy)([d]);
+        d.totalCollapse = d3.sum(d.stackValues, function(stack) {
+          return stack[0][1] - stack[0][0];
+        });
       }
       return d;
     });
@@ -361,7 +370,7 @@ export default function (config, helper) {
       .attr('transform', d => {
         console.log(d);        
         const x = vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2);
-        return 'translate(' + x + ',0)';
+        return 'translate(' + x + ',-10)';
       })
       .append('text')
       .attr('text-anchor', 'middle')
@@ -379,7 +388,7 @@ export default function (config, helper) {
       .enter().append('rect')
       .attr('y', function (d) {
         console.log(d[0]);
-        return d[0][1] ? vm._scales.y(d[0][1] / d[0].data[vm._config.value]) : vm._scales.y(0);
+        return d[0][1] ? vm._scales.y(d[0][1] / d[0].data.totalCollapse) : vm._scales.y(0);
       })
       .attr('x', function (d) {
         return vm._scales.x(d[0].data.x0);
@@ -388,7 +397,7 @@ export default function (config, helper) {
         return vm._scales.x(d[0].data[vm._config.value]);
       })
       .attr('height', function (d) {
-        return vm._scales.y((d[0][0] / d[0].data[vm._config.value])) - vm._scales.y(d[0][1] / d[0].data[vm._config.value]);
+        return vm._scales.y((d[0][0] / d[0].data.totalCollapse)) - vm._scales.y(d[0][1] / d[0].data.totalCollapse);
       })
       .attr('stroke', 'white')
       .attr('stroke-width', 1)
