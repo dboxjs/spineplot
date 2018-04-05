@@ -350,7 +350,7 @@ export default function (config, helper) {
       var cat = '<div>'
       cat += '<span>' + d.key + '</span>';
       cat += '</br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
-      cat += '</div>'
+      cat += '</div>';
       return cat;
     });
 
