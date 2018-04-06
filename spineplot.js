@@ -17,7 +17,6 @@ export default function (config, helper) {
       .attr('class', 'd3-tip')
       .direction('n')
       .html(vm._config.tip || function (d) {
-        console.log(d);
         var html = '<div>';
         html += '<span>' + d[vm._config.category] + '</span>';
         html += '</br><span>' + vm.utils.format(d[vm._config.value]) + '</span>';
@@ -134,7 +133,6 @@ export default function (config, helper) {
     vm._data = data.map(function(d) {
       d.x0 = total;
       d.x1 = total + d[vm._config.value];
-      console.log(vm._config.value, d);
       total += +d[vm._config.value];
       if (vm._config.hasOwnProperty('stackBy') && Array.isArray(vm._config.stackBy) && vm._config.stackBy.length > 0) {
         d.stackValues = d3.stack().keys(vm._config.stackBy)([d]);
@@ -204,7 +202,6 @@ export default function (config, helper) {
       };
       vm._scales.x = vm.utils.generateScale(vm._data, config);
 
-      console.log(vm._data);
       /* Generate y scale */
       config = {
         column: '',
@@ -234,8 +231,6 @@ export default function (config, helper) {
         minZero: true
       };
       vm._scales.y = vm.utils.generateScale(vm._data, config);
-
-      console.log(vm._data);
       
     }
     //vm.chart.scales.x = vm._scales.x;
@@ -271,7 +266,6 @@ export default function (config, helper) {
         .append('g')
         .attr('class', 'tick')
         .attr('transform', d => { 
-          console.log(d); 
           const x = vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2);
           return 'translate(' + x + ',0)'; 
         })
@@ -301,9 +295,6 @@ export default function (config, helper) {
         .attr('stroke-width', 1)
         .style('opacity', 0.9)
         .on('mouseover', function(d, i) {
-          console.log(d, d3.select(this), d3.select(this).node());
-
-
           if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
             d3.select(this).attr('fill', function (d) {
               return vm._getQuantileColor(d[vm._config.fill], 'onHover');
@@ -344,9 +335,7 @@ export default function (config, helper) {
    */
   Spineplot._drawStackByXAxis = function () {
     var vm = this;
-    console.log(vm);
     vm._tip.html(vm._config.tip || function (d) {
-      console.log(d);
       var cat = '<div>'
       cat += '<span>' + d.key + '</span>';
       cat += '</br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
@@ -368,7 +357,6 @@ export default function (config, helper) {
       .append('g')
       .attr('class', 'tick')
       .attr('transform', d => {
-        console.log(d);        
         const x = vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2);
         return 'translate(' + x + ',-10)';
       })
@@ -387,7 +375,6 @@ export default function (config, helper) {
       })
       .enter().append('rect')
       .attr('y', function (d) {
-        console.log(d[0]);
         return d[0][1] ? vm._scales.y(d[0][1] / d[0].data.totalCollapse) : vm._scales.y(0);
       })
       .attr('x', function (d) {
@@ -402,7 +389,6 @@ export default function (config, helper) {
       .attr('stroke', 'white')
       .attr('stroke-width', 1)
       .attr('fill', function (d) {
-        console.log('fill', d);
         return vm._scales.color(d[vm._config.fill]);
       })
       .on('mouseover', function (d, i) {
@@ -576,12 +562,10 @@ export default function (config, helper) {
 
         if (vm._config && vm._config.bars.min !== undefined && vm._config.bars.max !== undefined) {
           if (total < vm._config.bars.min || total > vm._config.bars.max) {
-            console.log('outOfRangeColor', total, vm._config.bars.min, vm._config.bars.max)
             return vm._config.bars.quantiles.outOfRangeColor;
           }
         } else {
           if (total < vm._minMax[0] || total > vm._minMax[1]) {
-            console.log('outOfRangeColor', total, vm._config.bars.min, vm._config.bars.max)
             return vm._config.bars.quantiles.outOfRangeColor;
           }
         }
