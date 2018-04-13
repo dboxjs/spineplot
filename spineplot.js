@@ -24,7 +24,7 @@ export default function (config, helper) {
         html += '</br><span>' + vm.utils.format(d[vm._config.value]) + '</span>';
         html += '</div>';
         return html;
-       });
+      });
 
   };
 
@@ -156,7 +156,7 @@ export default function (config, helper) {
       vm._quantiles = vm._setQuantile(data);
       vm._minMax = d3.extent(data, function (d) {
         return +d[vm._config.fill];
-      })
+      });
     }
 
     return vm;
@@ -257,9 +257,19 @@ export default function (config, helper) {
 
     vm.chart.svg().call(vm._tip);
 
+    const axesTip = d3.tip()
+      .attr('class', 'title-tip')
+      .html(d => {
+        return d[vm._config.category];
+      });
+    vm.chart.svg().call(axesTip);
+
     if (vm._config.orientation === 'horizontal') {
 
-      vm.chart.svg().append('g')
+      /**
+       * x axis tick labels
+       */
+      vm._xLabels = vm.chart.svg().append('g')
         .attr('class', 'x axis')
         .attr('transform', 'translate(0,' + vm.chart.height + 20 + ')')
         .selectAll('.tick')
@@ -269,11 +279,26 @@ export default function (config, helper) {
         .attr('class', 'tick')
         .attr('transform', d => { 
           const x = vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2);
-          return 'translate(' + x + ',0)'; 
+          return 'translate(' + x + ', 8)'; 
         })
         .append('text')
         .attr('text-anchor', 'middle')
         .text(d => d[vm._config.category]);
+
+      vm._xLabels.each(function (d) {
+        if (this.getComputedTextLength() > (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9) {
+          d3.select(this)
+            .on('mouseover', axesTip.show)
+            .on('mouseout', axesTip.hide);
+          let i = 1;
+          while (this.getComputedTextLength() > (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9) {
+            d3.select(this).text(function (d) {
+              return d[vm._config.category].slice(0, -i) + '...';
+            }).attr('title', d);
+            ++i;
+          }
+        }
+      });
 
       vm.chart.svg().selectAll('.bar')
         .data(vm._data)
@@ -347,10 +372,17 @@ export default function (config, helper) {
 
     vm.chart.svg().call(vm._tip);
 
+    const axesTip = d3.tip()
+      .attr('class', 'title-tip')
+      .html(d => {
+        return d[vm._config.category];
+      });
+    vm.chart.svg().call(axesTip);
+
     /**
      * x axis labels
      */
-    vm.chart.svg().append('g')
+    vm._xLabels = vm.chart.svg().append('g')
       .attr('class', 'x axis')
       .attr('transform', 'translate(0,' + (vm.chart.height + 20) + ')')
       .selectAll('g')
@@ -360,11 +392,26 @@ export default function (config, helper) {
       .attr('class', 'tick')
       .attr('transform', d => {
         const x = vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2);
-        return 'translate(' + x + ',-10)';
+        return 'translate(' + x + ', 0)';
       })
       .append('text')
       .attr('text-anchor', 'middle')
       .text(d => d[vm._config.category]);
+
+    vm._xLabels.each(function (d) {
+      if (this.getComputedTextLength() > (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9) {
+        d3.select(this)
+          .on('mouseover', axesTip.show)
+          .on('mouseout', axesTip.hide);
+        let i = 1;
+        while (this.getComputedTextLength() > (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9) {
+          d3.select(this).text(function (d) {
+            return d[vm._config.category].slice(0, -i) + '...';
+          }).attr('title', d);
+          ++i;
+        }
+      }
+    });
       
     var groups = vm.chart.svg().append('g')
       .selectAll('g')
