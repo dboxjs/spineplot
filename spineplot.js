@@ -271,7 +271,7 @@ export default function (config, helper) {
        */
       vm._xLabels = vm.chart.svg().append('g')
         .attr('class', 'x axis')
-        .attr('transform', 'translate(0,' + vm.chart.height + 20 + ')')
+        .attr('transform', 'translate(0,' + (vm.chart.height + 20) + ')')
         .selectAll('.tick')
         .data(vm._data)
         .enter()
@@ -283,7 +283,9 @@ export default function (config, helper) {
         })
         .append('text')
         .attr('text-anchor', 'middle')
-        .text(d => d[vm._config.category]);
+        .text(function(d) {
+          return d[vm._config.category];
+        });
 
       vm._xLabels.each(function (d) {
         let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
@@ -302,7 +304,7 @@ export default function (config, helper) {
             let i = 1;
             while (this.getComputedTextLength() > labelMaxWidth) {
               d3.select(this).text(function (d) {
-                return d.slice(0, -i) + '...';
+                return (d[vm._config.category] + '').slice(0, -i) + '...';
               }).attr('title', d);
               ++i;
             }
@@ -373,10 +375,12 @@ export default function (config, helper) {
   Spineplot._drawStackByXAxis = function () {
     var vm = this;
     vm._tip.html(vm._config.tip || function (d) {
-      var cat = '<div>'
+      var cat = '';
       cat += '<span>' + d.key + '</span>';
-      cat += '</br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
-      cat += '</div>';
+      if (d.key !== d[0].data[vm._config.category]) {
+        cat += '<br><span>' + d[0].data[vm._config.category] + '</span>';
+      }
+      cat += '<br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
       return cat;
     });
 
@@ -425,7 +429,7 @@ export default function (config, helper) {
           let i = 1;
           while (this.getComputedTextLength() > labelMaxWidth) {
             d3.select(this).text(function (d) {
-              return d.slice(0, -i) + '...';
+              return (d[vm._config.category] + '').slice(0, -i) + '...';
             }).attr('title', d);
             ++i;
           }
@@ -537,7 +541,7 @@ export default function (config, helper) {
         if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
           d3.select(this).attr('fill', function (d) {
             return vm._getQuantileColor(d[vm._config.fill], 'onHover');
-          })
+          });
         }
         vm._tip.show(d, d3.select(this).node());
 
