@@ -286,16 +286,26 @@ export default function (config, helper) {
         .text(d => d[vm._config.category]);
 
       vm._xLabels.each(function (d) {
-        if (this.getComputedTextLength() > (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9) {
+        let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
+        if (labelMaxWidth > 60) {
+          d3.select(this).call(vm.utils.wrap, labelMaxWidth, axesTip);
+        } else {
           d3.select(this)
-            .on('mouseover', axesTip.show)
-            .on('mouseout', axesTip.hide);
-          let i = 1;
-          while (this.getComputedTextLength() > (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9) {
-            d3.select(this).text(function (d) {
-              return d[vm._config.category].slice(0, -i) + '...';
-            }).attr('title', d);
-            ++i;
+            .attr('text-anchor', 'end')
+            .attr('dy', 0)
+            .attr('transform', 'translate(3,-8)rotate(-90)');
+          labelMaxWidth = vm._config.size.margin.bottom * 0.9;
+          if (this.getComputedTextLength() > labelMaxWidth) {
+            d3.select(this)
+              .on('mouseover', axesTip.show)
+              .on('mouseout', axesTip.hide);
+            let i = 1;
+            while (this.getComputedTextLength() > labelMaxWidth) {
+              d3.select(this).text(function (d) {
+                return d.slice(0, -i) + '...';
+              }).attr('title', d);
+              ++i;
+            }
           }
         }
       });
@@ -399,16 +409,26 @@ export default function (config, helper) {
       .text(d => d[vm._config.category]);
 
     vm._xLabels.each(function (d) {
-      if (this.getComputedTextLength() > (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9) {
+      let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
+      if (labelMaxWidth > 60) {
+        d3.select(this).call(vm.utils.wrap, labelMaxWidth, axesTip);
+      } else {
         d3.select(this)
-          .on('mouseover', axesTip.show)
-          .on('mouseout', axesTip.hide);
-        let i = 1;
-        while (this.getComputedTextLength() > (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9) {
-          d3.select(this).text(function (d) {
-            return d[vm._config.category].slice(0, -i) + '...';
-          }).attr('title', d);
-          ++i;
+          .attr('text-anchor', 'end')
+          .attr('dy', 0)
+          .attr('transform', 'translate(3,-8)rotate(-90)');
+        labelMaxWidth = vm._config.size.margin.bottom * 0.9;
+        if (this.getComputedTextLength() > labelMaxWidth) {
+          d3.select(this)
+            .on('mouseover', axesTip.show)
+            .on('mouseout', axesTip.hide);
+          let i = 1;
+          while (this.getComputedTextLength() > labelMaxWidth) {
+            d3.select(this).text(function (d) {
+              return d.slice(0, -i) + '...';
+            }).attr('title', d);
+            ++i;
+          }
         }
       }
     });
