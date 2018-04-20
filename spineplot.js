@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import * as _ from 'lodash';
 
 /*
  * Simple Spineplot
@@ -127,8 +128,26 @@ export default function (config, helper) {
     var vm = this;
 
     if (vm._config.filter) {
-      //In case we want to filter observations
+      // In case we want to filter observations
       data = data.filter(vm._config.filter);
+    }
+    //@TODO - ALLOW MULITPLE SORTS
+    if (vm._config.sortBy) {
+      if (vm._config.sortBy.category) {
+        data = data.sort(function (a, b) {
+          return vm._config.sortBy.category === 'desc' ? vm.utils.sortDescending(a[vm._config.category], b[vm._config.category]) : vm.utils.sortAscending(a[vm._config.category], b[vm._config.category]);
+        });
+      }
+      if (vm._config.sortBy.value) {
+        data = data.sort(function (a, b) {
+          return vm._config.sortBy.value === 'desc' ? vm.utils.sortDescending(a[vm._config.value], b[vm._config.value]) : vm.utils.sortAscending(a[vm._config.value], b[vm._config.value]);
+        });
+      }
+    } else {
+      data = data.sort(function (a, b) {
+        return vm.utils.sortAscending(a[vm._config.category], b[vm._config.category]);
+      });
+      console.log(data);
     }
 
     var total = 0;
@@ -144,13 +163,6 @@ export default function (config, helper) {
       }
       return d;
     });
-
-    //@TODO - ALLOW MULITPLE SORTS
-    if (vm._config.sortBy) {
-      vm._data = vm._data.sort(function (a, b) {
-        return a[vm._config.sortBy[0]] - b[vm._config.sortBy[0]];
-      });
-    }
 
     if (vm._config.hasOwnProperty('quantiles')) {
       vm._quantiles = vm._setQuantile(data);
@@ -173,7 +185,7 @@ export default function (config, helper) {
      * vm._config.valueAxis.scale
      * vm._data
      */
-    //Normal bars 
+    // Normal bars 
     if (vm._config.hasOwnProperty('category') && vm._config.hasOwnProperty('value')) {
       config = {
         column: 'x1',
@@ -585,7 +597,7 @@ export default function (config, helper) {
       values.push(+d[vm._config.fill]);
     });
 
-    values.sort(d3.ascending);
+    values.sort(vm.utils.sortAscending);
 
     //@TODO use quantile scale instead of manual calculations 
     if (vm._config && vm._config.quantiles && vm._config.quantiles.buckets) {
