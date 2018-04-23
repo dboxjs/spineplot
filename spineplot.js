@@ -147,7 +147,6 @@ export default function (config, helper) {
       data = data.sort(function (a, b) {
         return vm.utils.sortAscending(a[vm._config.category], b[vm._config.category]);
       });
-      console.log(data);
     }
 
     var total = 0;
@@ -300,8 +299,9 @@ export default function (config, helper) {
         });
 
       vm._xLabels.each(function (d) {
+        const currentWidth = this.getComputedTextLength();
         let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
-        if (labelMaxWidth > 60) {
+        if (currentWidth < (labelMaxWidth * 2)) {
           d3.select(this).call(vm.utils.wrap, labelMaxWidth, axesTip);
         } else {
           d3.select(this)
@@ -323,6 +323,7 @@ export default function (config, helper) {
           }
         }
       });
+      
 
       vm.chart.svg().selectAll('.bar')
         .data(vm._data)
@@ -425,8 +426,9 @@ export default function (config, helper) {
       .text(d => d[vm._config.category]);
 
     vm._xLabels.each(function (d) {
+      const currentWidth = this.getComputedTextLength();
       let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
-      if (labelMaxWidth > 60) {
+      if (currentWidth < (labelMaxWidth * 2)) {
         d3.select(this).call(vm.utils.wrap, labelMaxWidth, axesTip);
       } else {
         d3.select(this)
