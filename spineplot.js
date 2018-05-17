@@ -16,7 +16,7 @@ export default function (config, helper) {
     vm._config.orientation = 'horizontal';
     vm._data = [];
     vm._scales = {};
-    vm._tip = d3.tip()
+    vm._tip = vm.utils.d3.tip()
       .attr('class', 'd3-tip')
       .direction('n')
       .html(vm._config.tip || function (d) {
@@ -268,7 +268,7 @@ export default function (config, helper) {
 
     vm.chart.svg().call(vm._tip);
 
-    const axesTip = d3.tip()
+    const axesTip = vm.utils.d3.tip()
       .attr('class', 'title-tip')
       .html(d => {
         return d[vm._config.category];
@@ -298,10 +298,14 @@ export default function (config, helper) {
           return d[vm._config.category];
         });
 
+      const largestLabelWidth = d3.max(vm._xLabels.nodes(), function (node) {
+        return node.getComputedTextLength();
+      });
+
       vm._xLabels.each(function (d) {
-        const currentWidth = this.getComputedTextLength();
+        //const currentWidth = this.getComputedTextLength();
         let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
-        if (currentWidth < (labelMaxWidth * 2)) {
+        if (largestLabelWidth < (labelMaxWidth * 2)) {
           d3.select(this).call(vm.utils.wrap, labelMaxWidth, axesTip);
         } else {
           d3.select(this)
@@ -399,7 +403,7 @@ export default function (config, helper) {
 
     vm.chart.svg().call(vm._tip);
 
-    const axesTip = d3.tip()
+    const axesTip = vm.utils.d3.tip()
       .attr('class', 'title-tip')
       .html(d => {
         return d[vm._config.category];
@@ -425,10 +429,14 @@ export default function (config, helper) {
       .attr('text-anchor', 'middle')
       .text(d => d[vm._config.category]);
 
+    const largestLabelWidth = d3.max(vm._xLabels.nodes(), function (node) {
+      return node.getComputedTextLength();
+    });
+
     vm._xLabels.each(function (d) {
-      const currentWidth = this.getComputedTextLength();
+      //const currentWidth = this.getComputedTextLength();
       let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
-      if (currentWidth < (labelMaxWidth * 2)) {
+      if (largestLabelWidth < (labelMaxWidth * 2)) {
         d3.select(this).call(vm.utils.wrap, labelMaxWidth, axesTip);
       } else {
         d3.select(this)
