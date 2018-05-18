@@ -173,7 +173,7 @@ export default function (config, helper) {
     return vm;
   };
 
-  Spineplot.scales = function (s) {
+  Spineplot.scales = function () {
     var vm = this;
     var config;
     //vm._scales = s;
@@ -298,13 +298,15 @@ export default function (config, helper) {
           return d[vm._config.category];
         });
 
+      let labelMaxWidth = d3.min(vm._data, function (d) {
+        return (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
+      });
       const largestLabelWidth = d3.max(vm._xLabels.nodes(), function (node) {
         return node.getComputedTextLength();
       });
-
       vm._xLabels.each(function (d) {
         //const currentWidth = this.getComputedTextLength();
-        let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
+        //let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
         if (largestLabelWidth < (labelMaxWidth * 2)) {
           d3.select(this).call(vm.utils.wrap, labelMaxWidth, axesTip);
         } else {
@@ -312,13 +314,13 @@ export default function (config, helper) {
             .attr('text-anchor', 'end')
             .attr('dy', 0)
             .attr('transform', 'translate(3,-8)rotate(-90)');
-          labelMaxWidth = vm._config.size.margin.bottom * 0.9;
-          if (this.getComputedTextLength() > labelMaxWidth) {
+          let newLabelMaxWidth = vm._config.size.margin.bottom * 0.9;
+          if (this.getComputedTextLength() > newLabelMaxWidth) {
             d3.select(this)
               .on('mouseover', axesTip.show)
               .on('mouseout', axesTip.hide);
             let i = 1;
-            while (this.getComputedTextLength() > labelMaxWidth) {
+            while (this.getComputedTextLength() > newLabelMaxWidth) {
               d3.select(this).text(function (d) {
                 return (d[vm._config.category] + '').slice(0, -i) + '...';
               }).attr('title', d);
@@ -429,13 +431,16 @@ export default function (config, helper) {
       .attr('text-anchor', 'middle')
       .text(d => d[vm._config.category]);
 
+    let labelMaxWidth = d3.min(vm._data, function(d) {
+      return (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
+    });
     const largestLabelWidth = d3.max(vm._xLabels.nodes(), function (node) {
       return node.getComputedTextLength();
     });
-
+    
     vm._xLabels.each(function (d) {
       //const currentWidth = this.getComputedTextLength();
-      let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
+      //let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
       if (largestLabelWidth < (labelMaxWidth * 2)) {
         d3.select(this).call(vm.utils.wrap, labelMaxWidth, axesTip);
       } else {
@@ -443,13 +448,13 @@ export default function (config, helper) {
           .attr('text-anchor', 'end')
           .attr('dy', 0)
           .attr('transform', 'translate(3,-8)rotate(-90)');
-        labelMaxWidth = vm._config.size.margin.bottom * 0.9;
-        if (this.getComputedTextLength() > labelMaxWidth) {
+        let newLabelMaxWidth = vm._config.size.margin.bottom * 0.9;
+        if (this.getComputedTextLength() > newLabelMaxWidth) {
           d3.select(this)
             .on('mouseover', axesTip.show)
             .on('mouseout', axesTip.hide);
           let i = 1;
-          while (this.getComputedTextLength() > labelMaxWidth) {
+          while (this.getComputedTextLength() > newLabelMaxWidth) {
             d3.select(this).text(function (d) {
               return (d[vm._config.category] + '').slice(0, -i) + '...';
             }).attr('title', d);
@@ -529,7 +534,7 @@ export default function (config, helper) {
           html += '<span>' + k + '</span>';
         }
       }
-      html += '<br>' + vm.utils.format(d[1] - d[0])
+      html += '<br>' + vm.utils.format(d[1] - d[0]);
       return html;
     });
 
@@ -553,9 +558,7 @@ export default function (config, helper) {
       .attr('x', function (d) {
         return vm._scales.x(d[0]);
       })
-      .attr('height', function (d) {
-        return vm._scales.y.bandwidth()
-      })
+      .attr('height', vm._scales.y.bandwidth())
       .attr('width', function (d) {
         return vm._scales.x(d[1]) - vm._scales.x(d[0]);
       })
@@ -582,12 +585,12 @@ export default function (config, helper) {
         vm._tip.hide();
 
         if (vm._config.hasOwnProperty('onmouseout')) { //External function call, must be after all the internal code; allowing the user to overide 
-          vm._config.onmouseout.call(this, d, i)
+          vm._config.onmouseout.call(this, d, i);
         }
       })
       .on('click', function (d, i) {
         if (vm._config.hasOwnProperty('click')) {
-          vm._config.onclick.call(this, d, i)
+          vm._config.onclick.call(this, d, i);
         }
       });
 
@@ -622,13 +625,13 @@ export default function (config, helper) {
         quantile.push(0);
 
         for (var i = 1; i <= vm._config.quantiles.buckets - 1; i++) {
-          quantile.push(d3.quantile(aux, i * 1 / (vm._config.quantiles.buckets - 1)))
+          quantile.push(d3.quantile(aux, i * 1 / (vm._config.quantiles.buckets - 1)));
         }
 
       } else {
-        quantile.push(d3.quantile(values, 0))
-        for (var i = 1; i <= vm._config.quantiles.buckets; i++) {
-          quantile.push(d3.quantile(values, i * 1 / vm._config.quantiles.buckets))
+        quantile.push(d3.quantile(values, 0));
+        for (var j = 1; j <= vm._config.quantiles.buckets; j++) {
+          quantile.push(d3.quantile(values, j * 1 / vm._config.quantiles.buckets));
         }
       }
 
