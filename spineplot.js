@@ -264,50 +264,49 @@ export default function (config, helper) {
     groups.each(function(dat) {
       var el = this;
       dat.stackValues.forEach(function(sv) {
-        d3.select(el).append('text')
-          .attr('class', 'dbox-label')
-          .attr('transform', function() {
-            var rectH = vm._scales.x(sv[0].data[vm._config.value]);
-            return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 20 : vm._scales.y(0) + 20) + ')';
-          })
-          .text(function(d) {
-            return sv.key;
-          });
 
-        d3.select(el).append('text')
-          .attr('class', 'dbox-label')
-          .attr('transform', function() {
-            var rectH = vm._scales.x(sv[0].data[vm._config.value]);
-            return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 40 : vm._scales.y(0) + 40) + ')';
-          })
-          .text(function(d) {
-            return d.RANGO_EDAD;
-          });
+        var rectW = vm._scales.x(sv[0].data[vm._config.value]);
+        var rectH = vm._scales.y((sv[0][0] / sv[0].data.totalCollapse)) - vm._scales.y(sv[0][1] / sv[0].data.totalCollapse);
+        
+        if (rectH > 40) {
+          d3.select(el).append('text')
+            .attr('class', 'dbox-label')
+            .attr('transform', function() {
+              return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 20 : vm._scales.y(0) + 20) + ')';
+            })
+            .text(function() {
+              return sv.key;
+            });
 
-        d3.select(el).append('text')
-          .attr('class', 'dbox-label')
-          .attr('transform', function() {
-            var rectH = vm._scales.x(sv[0].data[vm._config.value]);
-            return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 60 : vm._scales.y(0) + 60) + ')';
-          })
-          .text(function(d) {
-            return vm.utils.format(d[sv.key]);
-          });
+          /*d3.select(el).append('text')
+            .attr('class', 'dbox-label')
+            .attr('transform', function() {
+              var rectH = vm._scales.x(sv[0].data[vm._config.value]);
+              return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 40 : vm._scales.y(0) + 40) + ')';
+            })
+            .text(function(d) {
+              return d.RANGO_EDAD;
+            });*/
 
-        //COEFFICIENT
-        d3.select(el).append('text')
-          .attr('class', 'dbox-label-coefficient')
-          .attr('transform', function() {
-            var rectH = vm._scales.x(sv[0].data[vm._config.value]);
-            return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 80 : vm._scales.y(0) + 80) + ')';
-          })
-          .text(function(d) {
-            if (isNaN(d[sv.key + 'coefficient'])) {
-              return '';
-            }
-            return '(' + d[sv.key + 'coefficient'].toFixed(2) + ')';
-          });
+          d3.select(el).append('text')
+            .attr('class', 'dbox-label')
+            .attr('transform', function() {
+              return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 40 : vm._scales.y(0) + 40) + ')';
+            })
+            .text(function(d) {
+              return d[sv.key] ? vm.utils.format(d[sv.key]) : '';
+            });
 
+          //COEFFICIENT
+          d3.select(el).append('text')
+            .attr('class', 'dbox-label-coefficient')
+            .attr('transform', function() {
+              return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 60 : vm._scales.y(0) + 60) + ')';
+            })
+            .text(function(d) {
+              return d[sv.key + 'coefficient'] ? '(' + d[sv.key + 'coefficient'].toFixed(2) + ')' : '';
+            });
+        }
       })
     });
   }
