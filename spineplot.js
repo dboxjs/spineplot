@@ -257,9 +257,63 @@ export default function (config, helper) {
     return vm;
   };
 
-  Spineplot.draw = function () {
+  Spineplot.drawLabels = function() {
     var vm = this;
 
+    var groups = vm.chart.svg().selectAll('.division')
+    groups.each(function(dat) {
+      var el = this;
+      dat.stackValues.forEach(function(sv) {
+        d3.select(el).append('text')
+          .attr('class', 'dbox-label')
+          .attr('transform', function() {
+            var rectH = vm._scales.x(sv[0].data[vm._config.value]);
+            return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 20 : vm._scales.y(0) + 20) + ')';
+          })
+          .text(function(d) {
+            return sv.key;
+          });
+
+        d3.select(el).append('text')
+          .attr('class', 'dbox-label')
+          .attr('transform', function() {
+            var rectH = vm._scales.x(sv[0].data[vm._config.value]);
+            return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 40 : vm._scales.y(0) + 40) + ')';
+          })
+          .text(function(d) {
+            return d.RANGO_EDAD;
+          });
+
+        d3.select(el).append('text')
+          .attr('class', 'dbox-label')
+          .attr('transform', function() {
+            var rectH = vm._scales.x(sv[0].data[vm._config.value]);
+            return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 60 : vm._scales.y(0) + 60) + ')';
+          })
+          .text(function(d) {
+            return vm.utils.format(d[sv.key]);
+          });
+
+        //COEFFICIENT
+        d3.select(el).append('text')
+          .attr('class', 'dbox-label-coefficient')
+          .attr('transform', function() {
+            var rectH = vm._scales.x(sv[0].data[vm._config.value]);
+            return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 80 : vm._scales.y(0) + 80) + ')';
+          })
+          .text(function(d) {
+            if (isNaN(d[sv.key + 'coefficient'])) {
+              return '';
+            }
+            return '(' + d[sv.key + 'coefficient'].toFixed(2) + ')';
+          });
+
+      })
+    });
+  }
+
+  Spineplot.draw = function() {
+    var vm = this;
     if (vm._config.hasOwnProperty('stackBy')) {
       if (vm._config.orientation === 'horizontal') vm._drawStackByXAxis();
       if (vm._config.orientation === 'vertical') vm._drawStackByYAxis();
@@ -345,7 +399,7 @@ export default function (config, helper) {
         .attr('x', (d) => vm._scales.x(d.x0) )
         .attr('y', 0)
         .attr('width', d => vm._scales.x(d[vm._config.value]) )
-        .attr('height', vm.chart.height)
+        .attr('height', vm.chart.height ? vm.chart.height : 100)
         .attr('fill', (d) => {
           return vm._scales.color !== false ? vm._scales.color(d[vm._config.fill]) : vm._getQuantileColor(d[vm._config.fill], 'default');
         })
@@ -467,7 +521,8 @@ export default function (config, helper) {
     var groups = vm.chart.svg().append('g')
       .selectAll('g')
       .data(vm._data)
-      .enter().append('g');
+      .enter().append('g')
+      .attr('class', 'division');
     
     groups.selectAll('rect')
       .data(function (d) {
@@ -484,7 +539,8 @@ export default function (config, helper) {
         return vm._scales.x(d[0].data[vm._config.value]);
       })
       .attr('height', function (d) {
-        return vm._scales.y((d[0][0] / d[0].data.totalCollapse)) - vm._scales.y(d[0][1] / d[0].data.totalCollapse);
+        var h = vm._scales.y((d[0][0] / d[0].data.totalCollapse)) - vm._scales.y(d[0][1] / d[0].data.totalCollapse)
+        return h;
       })
       .attr('stroke', 'white')
       .attr('stroke-width', 1)
@@ -522,6 +578,8 @@ export default function (config, helper) {
           vm._config.onclick.call(this, d, i);
         }
       });
+
+      Spineplot.drawLabels();
   };
 
   Spineplot._drawStackByYAxis = function () {
@@ -544,6 +602,7 @@ export default function (config, helper) {
       .selectAll('g')
       .data(vm._data)
       .enter().append('g')
+      .attr('class', 'division')
       .attr('fill', function (d) {
         return vm._scales.color(d.key);
       })
