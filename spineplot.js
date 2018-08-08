@@ -22,7 +22,7 @@ export default function (config, helper) {
       .html(vm._config.tip || function (d) {
         var html = '<div>';
         html += '<span>' + d[vm._config.category] + '</span>';
-        html += '</br><span>' + vm.utils.format(d[vm._config.value]) + '</span>';
+        html += '</br><span>' + vm.utils.format(d[vm._config.value], 1) + '</span>';
         html += '</div>';
         return html;
       });
@@ -294,7 +294,7 @@ export default function (config, helper) {
               return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 40 : vm._scales.y(0) + 40) + ')';
             })
             .text(function(d) {
-              return d[sv.key] ? vm.utils.format(d[sv.key]) : '';
+              return d[sv.key] ? vm.utils.format(d[sv.key], 1) : '';
             });
 
           //COEFFICIENT
@@ -304,7 +304,7 @@ export default function (config, helper) {
               return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 60 : vm._scales.y(0) + 60) + ')';
             })
             .text(function(d) {
-              return d[sv.key + 'coefficient'] ? '(' + d[sv.key + 'coefficient'].toFixed(2) + ')' : '';
+              return d[sv.key + 'coefficient'] ? '(' + d[sv.key + 'coefficient'].toFixed(1) + ')' : '';
             });
         }
       })
@@ -452,7 +452,7 @@ export default function (config, helper) {
       if (d.key !== d[0].data[vm._config.category]) {
         cat += '<br><span>' + d[0].data[vm._config.category] + '</span>';
       }
-      cat += '<br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
+      cat += '<br><span>' + vm.utils.format(d[0].data[d.key], 1) + '</span>';
       return cat;
     });
 
