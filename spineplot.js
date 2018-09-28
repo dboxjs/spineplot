@@ -333,6 +333,7 @@ export default function (config, helper) {
       /**
        * x axis tick labels
        */
+      let posX = [];
       vm._xLabels = vm.chart.svg().append('g')
         .attr('class', 'x axis')
         .attr('transform', 'translate(0,' + (vm.chart.height + 20) + ')')
@@ -341,8 +342,9 @@ export default function (config, helper) {
         .enter()
         .append('g')
         .attr('class', 'tick')
-        .attr('transform', d => { 
+        .attr('transform', d => {
           const x = vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2);
+          posX.push(x);
           return 'translate(' + x + ', 8)'; 
         })
         .append('text')
@@ -357,7 +359,9 @@ export default function (config, helper) {
       const largestLabelWidth = d3.max(vm._xLabels.nodes(), function (node) {
         return node.getComputedTextLength();
       });
-      vm._xLabels.each(function (d) {
+      let removed = [];
+
+      vm._xLabels.each(function (d, index, el) {
         //const currentWidth = this.getComputedTextLength();
         //let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
         if (largestLabelWidth < (labelMaxWidth * 2)) {
@@ -378,6 +382,24 @@ export default function (config, helper) {
                 return (d[vm._config.category] + '').slice(0, -i) + '...';
               }).attr('title', d);
               ++i;
+            }
+          }
+        }
+
+        let textSize = window.getComputedStyle(this, null).getPropertyValue("font-size");
+        let numSize = Number(textSize.replace(/\D/g,''));
+
+        if (index !== 0 && index !== vm._data.length - 1) {
+          let diffPos1 = posX[index] - posX[index - 1];
+          let diffPos2 = posX[index + 1] - posX[index];
+
+          let lessThanPrev = d.value < vm._data[index - 1].value;
+          let lessThanPost = d.value < vm._data[index + 1].value;
+
+          if (diffPos1 < numSize - 2 || diffPos2 < numSize - 2) {
+            if (lessThanPrev || lessThanPost) {
+              d3.select(this).remove();
+              removed.push(index);
             }
           }
         }
@@ -450,12 +472,14 @@ export default function (config, helper) {
       var cat = '';
       cat += '<span>' + d.key + '</span>';
       if (d.key !== d[0].data[vm._config.category]) {
+        cat += '<br><span>' + vm.utils.format(d[0].data[d.key], 1) + '</span>';
         cat += '<br><span>' + d[0].data[vm._config.category] + '</span>';
+        cat += '<br><span>' + vm.utils.format(d[0].data[vm._config.value], 1) + '</span>';
+      } else {
+        cat += '<br><span>' + vm.utils.format(d[0].data[d.key], 1) + '</span>';
       }
-      cat += '<br><span>' + vm.utils.format(d[0].data[d.key], 1) + '</span>';
       return cat;
     });
-
     vm.chart.svg().call(vm._tip);
 
     const axesTip = vm.utils.d3.tip()
@@ -522,7 +546,7 @@ export default function (config, helper) {
       .data(vm._data)
       .enter().append('g')
       .attr('class', 'division');
-    
+
     groups.selectAll('rect')
       .data(function (d) {
         return d.stackValues;
