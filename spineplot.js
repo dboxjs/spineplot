@@ -472,9 +472,9 @@ export default function (config, helper) {
       var cat = '';
       cat += '<span>' + d.key + '</span>';
       if (d.key !== d[0].data[vm._config.category]) {
-        cat += '<br><span>' + vm.utils.format(d[0].data[d.key], 1) + '</span>';
+        cat += '<br><span>Y: ' + vm.utils.format(d[0].data[d.key], 1) + '</span>';
         cat += '<br><span>' + d[0].data[vm._config.category] + '</span>';
-        cat += '<br><span>' + vm.utils.format(d[0].data[vm._config.value], 1) + '</span>';
+        cat += '<br><span>X: ' + vm.utils.format(d[0].data[vm._config.value], 1) + '</span>';
       } else {
         cat += '<br><span>' + vm.utils.format(d[0].data[d.key], 1) + '</span>';
       }
