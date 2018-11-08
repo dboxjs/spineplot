@@ -22,7 +22,7 @@ export default function (config, helper) {
       .html(vm._config.tip || function (d) {
         var html = '<div>';
         html += '<span>' + d[vm._config.category] + '</span>';
-        html += '</br><span>' + vm.utils.format(d[vm._config.value], 1) + '</span>';
+        html += '</br><span>' + vm.utils.format(d[vm._config.value], false, 1) + '</span>';
         html += '</div>';
         return html;
       });
@@ -271,6 +271,7 @@ export default function (config, helper) {
         if (rectH > 40) {
           d3.select(el).append('text')
             .attr('class', 'dbox-label')
+            .attr('text-anchor', 'middle')
             .attr('transform', function() {
               return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 20 : vm._scales.y(0) + 20) + ')';
             })
@@ -278,38 +279,19 @@ export default function (config, helper) {
               return sv.key;
             });
 
-          /*d3.select(el).append('text')
-            .attr('class', 'dbox-label')
-            .attr('transform', function() {
-              var rectH = vm._scales.x(sv[0].data[vm._config.value]);
-              return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectH/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 40 : vm._scales.y(0) + 40) + ')';
-            })
-            .text(function(d) {
-              return d.RANGO_EDAD;
-            });*/
-
           d3.select(el).append('text')
             .attr('class', 'dbox-label')
+            .attr('text-anchor', 'middle')
             .attr('transform', function() {
               return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 40 : vm._scales.y(0) + 40) + ')';
             })
             .text(function(d) {
-              return d[sv.key] ? vm.utils.format(d[sv.key], 1) : '';
-            });
-
-          //COEFFICIENT
-          d3.select(el).append('text')
-            .attr('class', 'dbox-label-coefficient')
-            .attr('transform', function() {
-              return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 60 : vm._scales.y(0) + 60) + ')';
-            })
-            .text(function(d) {
-              return d[sv.key + 'coefficient'] ? '(' + d[sv.key + 'coefficient'].toFixed(1) + ')' : '';
+              return d[sv.key] ? vm.utils.format(d[sv.key], true) : '';
             });
         }
-      })
+      });
     });
-  }
+  };
 
   Spineplot.draw = function() {
     var vm = this;
@@ -472,11 +454,11 @@ export default function (config, helper) {
       var cat = '';
       cat += '<span>' + d.key + '</span>';
       if (d.key !== d[0].data[vm._config.category]) {
-        cat += '<br><span>' + vm.utils.format(d[0].data[d.key], 1) + '</span>';
+        cat += '<br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
         cat += '<br><span>' + d[0].data[vm._config.category] + '</span>';
-        cat += '<br><span>' + vm.utils.format(d[0].data[vm._config.value], 1) + '</span>';
+        cat += '<br><span>' + vm.utils.format(d[0].data[vm._config.value]) + '</span>';
       } else {
-        cat += '<br><span>' + vm.utils.format(d[0].data[d.key], 1) + '</span>';
+        cat += '<br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
       }
       return cat;
     });
