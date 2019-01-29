@@ -259,16 +259,17 @@ export default function (config, helper) {
 
   Spineplot.drawLabels = function() {
     var vm = this;
-
-    var groups = vm.chart.svg().selectAll('.division')
+    var groups = vm.chart.svg().selectAll('.division');
     groups.each(function(dat) {
       var el = this;
       dat.stackValues.forEach(function(sv) {
-
         var rectW = vm._scales.x(sv[0].data[vm._config.value]);
         var rectH = vm._scales.y((sv[0][0] / sv[0].data.totalCollapse)) - vm._scales.y(sv[0][1] / sv[0].data.totalCollapse);
-        
-        if (rectH > 40) {
+        /**
+         * @since Jan 28
+         * @todo Get the width of the text in pixels to hide it if it does not fit
+         */
+        if (rectH > 40 && rectW > 40) {
           d3.select(el).append('text')
             .attr('class', 'dbox-label')
             .attr('text-anchor', 'middle')
@@ -277,16 +278,11 @@ export default function (config, helper) {
             })
             .text(function() {
               return sv.key;
-            });
-
-          d3.select(el).append('text')
-            .attr('class', 'dbox-label')
-            .attr('text-anchor', 'middle')
-            .attr('transform', function() {
-              return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 40 : vm._scales.y(0) + 40) + ')';
-            })
-            .text(function(d) {
-              return d[sv.key] ? vm.utils.format(d[sv.key], true) : '';
+              /**
+               * @since Jan 28
+               * @todo Fix fomatting issue. vm.utils.format(sv.key, true) returns empty.
+               * Formatting --> sv.key ? vm.utils.format(sv.key, true) : '';
+               */ 
             });
         }
       });
