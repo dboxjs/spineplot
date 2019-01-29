@@ -269,7 +269,7 @@ export default function (config, helper) {
          * @since Jan 28
          * @todo Get the width of the text in pixels to hide it if it does not fit
          */
-        if (rectH > 25 && rectW > 40) {
+        if (rectH > 25 && rectW > 50) {
           d3.select(el).append('text')
             .attr('class', 'dbox-label')
             .attr('text-anchor', 'middle')
