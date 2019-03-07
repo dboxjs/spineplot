@@ -265,10 +265,6 @@ export default function (config, helper) {
       dat.stackValues.forEach(function(sv) {
         var rectW = vm._scales.x(sv[0].data[vm._config.value]);
         var rectH = vm._scales.y((sv[0][0] / sv[0].data.totalCollapse)) - vm._scales.y(sv[0][1] / sv[0].data.totalCollapse);
-        /**
-         * @since Jan 28
-         * @todo Get the width of the text in pixels to hide it if it does not fit
-         */
         if (rectH > 25 && rectW > 112) {
           d3.select(el).append('text')
             .attr('class', 'dbox-label')
@@ -278,12 +274,6 @@ export default function (config, helper) {
             })
             .text(function() {
               return 'X: ' + vm.utils.format(sv[0].data[vm._config.value]) + ', Y: ' + vm.utils.format(sv[0].data[sv.key]);
-              /**
-               * @since Jan 28
-               * @todo Fix fomatting issue. vm.utils.format(sv.key, true) returns empty.
-               * Formatting --> sv.key ? vm.utils.format(sv.key, true) : '';
-               * 
-               **/
             });
         }
       });
