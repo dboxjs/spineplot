@@ -447,7 +447,6 @@ export default function (config, helper) {
       } else {
         cat += '<br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
       }
-      // HERE!!
       return cat;
     });
     vm.chart.svg().call(vm._tip);
