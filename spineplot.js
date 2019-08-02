@@ -22,7 +22,7 @@ export default function (config, helper) {
       .html(vm._config.tip || function (d) {
         var html = '<div>';
         html += '<span>' + d[vm._config.category] + '</span>';
-        html += '</br><span>' + vm.utils.format(d[vm._config.value], false, 1) + '</span>';
+        html += '</br><span>' + vm.utils.format()(d[vm._config.value]) + '</span>';
         html += '</div>';
         return html;
       });
@@ -273,7 +273,7 @@ export default function (config, helper) {
               return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 20 : vm._scales.y(0) + 20) + ')';
             })
             .text(function() {
-              return 'X: ' + vm.utils.format(sv[0].data[vm._config.value]) + ', Y: ' + vm.utils.format(sv[0].data[sv.key]);
+              return 'X: ' + vm.utils.format(vm._config.xAxis)(sv[0].data[vm._config.value]) + ', Y: ' + vm.utils.format(vm._config.yAxis)(sv[0].data[sv.key]);
             });
         }
       });
@@ -355,7 +355,7 @@ export default function (config, helper) {
           }
         }
 
-        let textSize = window.getComputedStyle(this, null).getPropertyValue("font-size");
+        let textSize = window.getComputedStyle(this, null).getPropertyValue('font-size');
         let numSize = Number(textSize.replace(/\D/g,''));
 
         if (index !== 0 && index !== vm._data.length - 1) {
@@ -441,11 +441,11 @@ export default function (config, helper) {
       var cat = '';
       cat += '<span>' + d.key + '</span>';
       if (d.key !== d[0].data[vm._config.category]) {
-        cat += '<br><span>Y: ' + vm.utils.format(d[0].data[d.key]) + '</span>';
+        cat += '<br><span>Y: ' + vm.utils.format(vm._config.yAxis)(d[0].data[d.key]) + '</span>';
         cat += '<br><span>' + d[0].data[vm._config.category] + '</span>';
-        cat += '<br><span>X: ' + vm.utils.format(d[0].data[vm._config.value]) + '</span>';
+        cat += '<br><span>X: ' + vm.utils.format(vm._config.xAxis)(d[0].data[vm._config.value]) + '</span>';
       } else {
-        cat += '<br><span>' + vm.utils.format(d[0].data[d.key]) + '</span>';
+        cat += '<br><span>' + vm.utils.format()(d[0].data[d.key]) + '</span>';
       }
       return cat;
     });
@@ -531,7 +531,7 @@ export default function (config, helper) {
         return vm._scales.x(d[0].data[vm._config.value]);
       })
       .attr('height', function (d) {
-        var h = vm._scales.y((d[0][0] / d[0].data.totalCollapse)) - vm._scales.y(d[0][1] / d[0].data.totalCollapse)
+        var h = vm._scales.y((d[0][0] / d[0].data.totalCollapse)) - vm._scales.y(d[0][1] / d[0].data.totalCollapse);
         return h;
       })
       .attr('stroke', 'white')
@@ -571,7 +571,7 @@ export default function (config, helper) {
         }
       });
 
-      Spineplot.drawLabels();
+    Spineplot.drawLabels();
   };
 
   Spineplot._drawStackByYAxis = function () {
@@ -584,7 +584,7 @@ export default function (config, helper) {
           html += '<span>' + k + '</span>';
         }
       }
-      html += '<br>' + vm.utils.format(d[1] - d[0]);
+      html += '<br>' + vm.utils.format()(d[1] - d[0]);
       return html;
     });
 
