@@ -18,11 +18,11 @@ export default function (config, helper) {
     vm._scales = {};
     vm._tip = vm.utils.d3.tip()
       .attr(
-        'class', 
-        'd3-tip ' + 
-          (vm._config.tooltip && vm._config.tooltip.classed
-            ? vm._config.tooltip.classed
-            : '')
+        'class',
+        'd3-tip ' +
+        (vm._config.tooltip && vm._config.tooltip.classed ?
+          vm._config.tooltip.classed :
+          '')
       )
       .direction('n')
       .html(vm._config.tip || function (d) {
@@ -108,7 +108,7 @@ export default function (config, helper) {
 
   Spineplot.format = function (format) {
     var vm = this;
-    if (typeof format == 'function' || format instanceof Function)
+    if (typeof format === 'function' || format instanceof Function)
       vm.utils.format = format;
     else
       vm.utils.format = d3.format(format);
@@ -156,13 +156,13 @@ export default function (config, helper) {
     }
 
     var total = 0;
-    vm._data = data.map(function(d) {
+    vm._data = data.map(function (d) {
       d.x0 = total;
       d.x1 = total + d[vm._config.value];
       total += +d[vm._config.value];
       if (vm._config.hasOwnProperty('stackBy') && Array.isArray(vm._config.stackBy) && vm._config.stackBy.length > 0) {
         d.stackValues = d3.stack().keys(vm._config.stackBy)([d]);
-        d.totalCollapse = d3.sum(d.stackValues, function(stack) {
+        d.totalCollapse = d3.sum(d.stackValues, function (stack) {
           return stack[0][1] - stack[0][0];
         });
       }
@@ -250,7 +250,7 @@ export default function (config, helper) {
         minZero: true
       };
       vm._scales.y = vm.utils.generateScale(vm._data, config);
-      
+
     }
     //vm.chart.scales.x = vm._scales.x;
     //vm.chart.scales.y = vm._scales.y;
@@ -263,22 +263,22 @@ export default function (config, helper) {
     return vm;
   };
 
-  Spineplot.drawLabels = function() {
+  Spineplot.drawLabels = function () {
     var vm = this;
     var groups = vm.chart.svg().selectAll('.division');
-    groups.each(function(dat) {
+    groups.each(function (dat) {
       var el = this;
-      dat.stackValues.forEach(function(sv) {
+      dat.stackValues.forEach(function (sv) {
         var rectW = vm._scales.x(sv[0].data[vm._config.value]);
         var rectH = vm._scales.y((sv[0][0] / sv[0].data.totalCollapse)) - vm._scales.y(sv[0][1] / sv[0].data.totalCollapse);
         if (rectH > 25 && rectW > 112) {
           d3.select(el).append('text')
             .attr('class', 'dbox-label')
             .attr('text-anchor', 'middle')
-            .attr('transform', function() {
-              return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW/2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 20 : vm._scales.y(0) + 20) + ')';
+            .attr('transform', function () {
+              return 'translate(' + (vm._scales.x(sv[0].data.x0) + rectW / 2) + ',' + (sv[0][1] ? vm._scales.y(sv[0][1] / sv[0].data.totalCollapse) + 20 : vm._scales.y(0) + 20) + ')';
             })
-            .text(function() {
+            .text(function () {
               return 'X: ' + vm.utils.format(vm._config.xAxis)(sv[0].data[vm._config.value]) + ', Y: ' + vm.utils.format(vm._config.yAxis)(sv[0].data[sv.key]);
             });
         }
@@ -286,7 +286,7 @@ export default function (config, helper) {
     });
   };
 
-  Spineplot.draw = function() {
+  Spineplot.draw = function () {
     var vm = this;
     if (vm._config.hasOwnProperty('stackBy')) {
       if (vm._config.orientation === 'horizontal') vm._drawStackByXAxis();
@@ -320,11 +320,11 @@ export default function (config, helper) {
         .attr('transform', d => {
           const x = vm._scales.x(d.x0) + (vm._scales.x(d.x1 - d.x0) / 2);
           posX.push(x);
-          return 'translate(' + x + ', 8)'; 
+          return 'translate(' + x + ', 8)';
         })
         .append('text')
         .attr('text-anchor', 'middle')
-        .text(function(d) {
+        .text(function (d) {
           return d[vm._config.category];
         });
 
@@ -336,7 +336,7 @@ export default function (config, helper) {
       });
       let removed = [];
 
-      vm._xLabels.each(function (d, index, el) {
+      vm._xLabels.each(function (d, index) { // , el) {
         //const currentWidth = this.getComputedTextLength();
         //let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
         if (largestLabelWidth < (labelMaxWidth * 2)) {
@@ -362,7 +362,7 @@ export default function (config, helper) {
         }
 
         let textSize = window.getComputedStyle(this, null).getPropertyValue('font-size');
-        let numSize = Number(textSize.replace(/\D/g,''));
+        let numSize = Number(textSize.replace(/\D/g, ''));
 
         if (index !== 0 && index !== vm._data.length - 1) {
           let diffPos1 = posX[index] - posX[index - 1];
@@ -379,7 +379,7 @@ export default function (config, helper) {
           }
         }
       });
-      
+
 
       vm.chart.svg().selectAll('.bar')
         .data(vm._data)
@@ -392,9 +392,9 @@ export default function (config, helper) {
           }
           return id;
         })
-        .attr('x', (d) => vm._scales.x(d.x0) )
+        .attr('x', (d) => vm._scales.x(d.x0))
         .attr('y', 0)
-        .attr('width', d => vm._scales.x(d[vm._config.value]) )
+        .attr('width', d => vm._scales.x(d[vm._config.value]))
         .attr('height', vm.chart.height ? vm.chart.height : 100)
         .attr('fill', (d) => {
           return vm._scales.color !== false ? vm._scales.color(d[vm._config.fill]) : vm._getQuantileColor(d[vm._config.fill], 'default');
@@ -402,7 +402,7 @@ export default function (config, helper) {
         .attr('stroke', 'white')
         .attr('stroke-width', 1)
         .style('opacity', 0.9)
-        .on('mouseover', function(d, i) {
+        .on('mouseover', function (d, i) {
           if (vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) { //OnHover colors
             d3.select(this).attr('fill', function (d) {
               return vm._getQuantileColor(d[vm._config.fill], 'onHover');
@@ -483,13 +483,13 @@ export default function (config, helper) {
       .attr('text-anchor', 'middle')
       .text(d => d[vm._config.category]);
 
-    let labelMaxWidth = d3.min(vm._data, function(d) {
+    let labelMaxWidth = d3.min(vm._data, function (d) {
       return (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
     });
     const largestLabelWidth = d3.max(vm._xLabels.nodes(), function (node) {
       return node.getComputedTextLength();
     });
-    
+
     vm._xLabels.each(function (d) {
       //const currentWidth = this.getComputedTextLength();
       //let labelMaxWidth = (vm._scales.x(d.x1) - vm._scales.x(d.x0)) * 0.9;
@@ -515,7 +515,7 @@ export default function (config, helper) {
         }
       }
     });
-      
+
     var groups = vm.chart.svg().append('g')
       .selectAll('g')
       .data(vm._data)
@@ -586,7 +586,7 @@ export default function (config, helper) {
     vm._tip.html(vm._config.tip || function (d) {
       var html = '<div><span>' + d[vm._config.category] + '<span><br>';
       for (var k in d.data) {
-        if ((d[1] - d[0]) == d.data[k]) {
+        if ((d[1] - d[0]) === d.data[k]) {
           html += '<span>' + k + '</span>';
         }
       }
@@ -725,7 +725,7 @@ export default function (config, helper) {
           }
         }
 
-        if (type == 'default') {
+        if (type === 'default') {
           if (total <= vm._quantiles[1]) {
             return vm._config.bars.quantiles.colors[0]; //'#f7c7c5';
           } else if (total <= vm._quantiles[2]) {
@@ -739,7 +739,7 @@ export default function (config, helper) {
           }
         }
 
-        if (type == 'onHover' && vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) {
+        if (type === 'onHover' && vm._config.hasOwnProperty('quantiles') && vm._config.quantiles.hasOwnProperty('colorsOnHover')) {
           if (total <= vm._quantiles[1]) {
             return vm._config.quantiles.colorsOnHover[0]; //'#f7c7c5';
           } else if (total <= vm._quantiles[2]) {
@@ -756,7 +756,7 @@ export default function (config, helper) {
       }
     }
 
-    if (vm._quantiles.length == 2) {
+    if (vm._quantiles.length === 2) {
       /*if(total === 0 ){
         return d4theme.colors.quantiles[0];//return '#fff';
       }else if(total <= vm._quantiles[1]){
